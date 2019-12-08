@@ -25,7 +25,7 @@ const calculateCompleteFuel = mass => {
     const fuel = calculateFuel(mass);
     if (fuel < 0) {return 0; }
     return fuel + calculateCompleteFuel(fuel);
-}
+};
 const allFuel = input.map(calculateCompleteFuel)
     .reduce((sum, cur) => sum + cur);
 

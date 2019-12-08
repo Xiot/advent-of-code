@@ -23,7 +23,7 @@ async function run(phases) {
 function* stepPhases(phaseValues) {
 
     for(let phase of permutations(phaseValues)) {
-        yield phase
+        yield phase;
     }
 }
 function phaseName(values) {
@@ -44,7 +44,7 @@ async function findMax() {
     for(let phase of stepPhases([0, 1, 2, 3, 4])) {
         const value = await run(phase);
         if (value > max.value) {
-            max = {value, phase}
+            max = {value, phase};
         }
     }
     return max;
@@ -55,15 +55,15 @@ async function feedbackLoop(loader, phases) {
 
     const programs = phases.map(phase => {
 
-        const opt = {debug: DEBUG}
+        const opt = {debug: DEBUG};
         const program = loader();
 
         const input = new Stream([phase]);
         const output = new Stream();
-        const io = asyncIO(input, output, opt)
+        const io = asyncIO(input, output, opt);
         const run = () => {
-            return execute(program, io, opt)
-        }
+            return execute(program, io, opt);
+        };
 
         return {
             program,
@@ -71,7 +71,7 @@ async function feedbackLoop(loader, phases) {
             io,
             input,
             output
-        }
+        };
     });
 
     programs[0].input.write(0);
@@ -79,12 +79,12 @@ async function feedbackLoop(loader, phases) {
     programs.forEach((p, i) => {
         const nextIndex = (i + 1) % programs.length;
         const chainedProgram = programs[nextIndex];
-        p.output.on('write', value => chainedProgram.input.write(value))
+        p.output.on('write', value => chainedProgram.input.write(value));
     });
 
     const result = await Promise.all(
         programs.map(x => x.run())
-    )
+    );
 
     return programs[4].io.output;
 }
@@ -101,7 +101,7 @@ async function findMaxWithFeedback(loader) {
     for(let phase of stepPhases([5, 6, 7, 8, 9])) {
         const value = await feedbackLoop(loader, phase);
         if (value > max.value) {
-            max = {value, phase}
+            max = {value, phase};
         }
     }
     return max;

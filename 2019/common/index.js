@@ -4,4 +4,4 @@ module.exports = {
     ...require('./array'),
     ...require('./deferred'),
     ...require('./stream'),
-}
+};

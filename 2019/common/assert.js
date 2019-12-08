@@ -7,4 +7,4 @@ function assert(expected, actual, message) {
 
 module.exports = {
     assert
-}
+};

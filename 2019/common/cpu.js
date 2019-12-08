@@ -14,11 +14,11 @@ const OpCodes = {
     lessThan: 7,
     equal: 8,
     exit: 99,
-}
+};
 const Mode = {
     position: 0,
     immediate: 1,
-}
+};
 
 const operationLength = code => {
 
@@ -39,7 +39,7 @@ const operationLength = code => {
     default:
         throw new Error(`Invalid OpCode '${code}'`);
     }
-}
+};
 
 function parseOpCode(data, index) {
     const code = data[index];
@@ -60,22 +60,22 @@ function parseOpCode(data, index) {
                 mode,
                 index: mode === Mode.position ? value : index + 1,
                 value: mode === Mode.position ? data[value] : value
-            }
-        })
+            };
+        });
 
     return {
         index,
         code: op,
         length: operationLength(op),
         parameters: params
-    }
+    };
 }
 
 function valueAt(data, index, mode) {
     if (mode === Mode.immediate) {
         return data[index];
     } else {
-        return data[data[index]]
+        return data[data[index]];
     }
 }
 function setValue(data, addressPointer, value) {
@@ -136,7 +136,7 @@ const opMap = {
         data[op.parameters[2].index] = lessThan ? 1 : 0;
         return index + 4;
     }
-}
+};
 
 function processOperation(op, data, index, io) {
     const processor = opMap[op.code];
@@ -165,7 +165,7 @@ function asyncIO(input, output, {debug} = {debug: false}) {
         },
         get output() { return lastWrite; },
         getLast() { return lastWrite; }
-    }
+    };
 }
 
 function createIo(input) {
@@ -188,7 +188,7 @@ function createIo(input) {
             storedValue = value;
         },
         get output() {return storedValue; }
-    }
+    };
 }
 
 async function execute(input, io, opt = {debug: false}) {
@@ -228,7 +228,7 @@ function loadProgram(name) {
 }
 
 function parseProgram(text) {
-    return text.split(',').map(Number)
+    return text.split(',').map(Number);
 }
 
 function printDebugInformation(data, op) {
@@ -241,11 +241,11 @@ function printDebugInformation(data, op) {
         p2: chalk.redBright,
         p3: chalk.cyan,
         parameters: [chalk.green, chalk.redBright, chalk.cyan]
-    }
+    };
 
     const hilight = (pos, color) => {
-        clone[pos] = color(clone[pos])
-    }
+        clone[pos] = color(clone[pos]);
+    };
 
     hilight(op.index, colors.op);
     op.parameters.forEach((p, i) => {
@@ -253,12 +253,12 @@ function printDebugInformation(data, op) {
         const color = colors.parameters[i];
         hilight(op.index + i + 1, color);
         if (param.mode === Mode.position) {
-            hilight(param.index, color)
+            hilight(param.index, color);
         }
-    })
+    });
 
     const instructionPointer = colors.op(String(op.index).padStart(4, ' '));
-    console.log(`${instructionPointer}] ${clone.map(x => String(x)).join(',')}`)
+    console.log(`${instructionPointer}] ${clone.map(x => String(x)).join(',')}`);
 }
 
 module.exports = {
@@ -267,4 +267,4 @@ module.exports = {
     execute,
     loadProgram,
     parseProgram
-}
+};

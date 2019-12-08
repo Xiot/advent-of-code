@@ -6,10 +6,24 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "babel-node": "^0.0.1-security",
+    "babel-register": "^6.26.0",
     "chalk": "^3.0.0",
+    "eslint": "^6.7.2",
     "lodash": "^4.17.15"
   },
   "volta": {
     "node": "12.13.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/node": "^7.7.4",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.7.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "babel-eslint": "^10.0.3",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "^1.19.1"
   }
 }

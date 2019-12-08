@@ -2,11 +2,10 @@ const fs = require('fs');
 
 const load = (noun, verb) => {
     const data = fs.readFileSync('./day-02/input.txt', 'utf-8').split(',').map(Number);
-    data[1] = noun
-    data[2] = verb
+    data[1] = noun;
+    data[2] = verb;
     return data;
-}
-const data = load(12, 2);
+};
 
 const calculate = (data) => {
     for(let index = 0; index < data.length; index += 4) {
@@ -24,7 +23,7 @@ const calculate = (data) => {
             throw new Error('foo');
         }
     }
-}
+};
 console.log(calculate(load(12,2)));
 
 const findTarget = (target) => {
@@ -32,12 +31,12 @@ const findTarget = (target) => {
         for(let v = 0; v <= 99; v++) {
             const result = calculate(load(n,v));
             if (result === target) {
-                return [n,v]
+                return [n,v];
             }
         }
     }
-}
+};
 
 const [n, v] = findTarget(19690720);
 console.log(n, v);
-console.log(n * 100 + v)
+console.log(n * 100 + v);

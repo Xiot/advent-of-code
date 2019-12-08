@@ -28,7 +28,7 @@ function countOrbits(body, target = 'COM') {
     while (current != null) {
         current = current.orbits;
         if (current) {
-            count++
+            count++;
         }
         if (current && current.name === target) {
             break;
@@ -42,14 +42,14 @@ function getPath(source, target) {
     let path = [source];
     while(current != null) {
         current = current.orbits;
-        if (!current) { throw new Error(`No Path between ${source.name} and ${target.name}`)}
+        if (!current) { throw new Error(`No Path between ${source.name} and ${target.name}`);}
 
         path.push(current);
         if (current === target) {
             return path;
         }
     }
-    throw new Error(`No Path between ${source.name} and ${target.name}`)
+    throw new Error(`No Path between ${source.name} and ${target.name}`);
 }
 
 const totalCount = Object.values(bodies).map(countOrbits).reduce((acc, cur) => acc + cur);
@@ -66,7 +66,7 @@ function namesOf(path) {
     return path.map(x => x.name);
 }
 function printNamesOf(path) {
-    console.log(path.length, JSON.stringify(namesOf(path)))
+    console.log(path.length, JSON.stringify(namesOf(path)));
 }
 
 function getPathBetween(source, target) {
