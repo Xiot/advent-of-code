@@ -40,15 +40,6 @@ function shortestDistance(points, x, y) {
     return shortest.indexes.length === 1 ? shortest.indexes[0] : -1;
 }
 
-function enlarge(base, size) {
-    return {
-        left: base.left - size,
-        right: base.right + size,
-        top: base.top - size,
-        bottom: base.bottom + size,
-    };
-}
-
 function indexesOnEdge(bounds, grid) {
 
     const indexes = new Set();

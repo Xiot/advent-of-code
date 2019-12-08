@@ -12,7 +12,7 @@ function findInput(name) {
 }
 
 export function loadInput(...args) {
-    const parts = args.map(x => String(x)).join('/');
+    const parts = args.map(x => String(x).padStart(2, '0')).join('/');
     const filename = findInput(parts);
     return fs.readFileSync(filename, 'utf-8');
 }
