@@ -4,7 +4,6 @@ import chalk from 'chalk';
 
 const Width = 25;
 const Height = 6;
-const Size = Width * Height;
 
 const Black = 0;
 const White = 1;

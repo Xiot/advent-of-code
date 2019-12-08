@@ -1,6 +1,6 @@
 module.exports = {
     ...require('./cpu'),
-    ...require('./assert'),
+    ...require('../../utils/assert'),
     ...require('./array'),
     ...require('./deferred'),
     ...require('./stream'),
