@@ -1,0 +1,15 @@
+{
+  "name": "advent-of-code",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "xiot",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "lodash": "^4.17.15"
+  },
+  "volta": {
+    "node": "12.13.1"
+  }
+}
