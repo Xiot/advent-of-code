@@ -1,5 +1,4 @@
 const {loadProgram, parseProgram, execute, createIo, asyncIO, permutations, assert, Stream} = require('../common');
-const {range} = require('lodash');
 
 const DEBUG = false;
 
@@ -82,7 +81,7 @@ async function feedbackLoop(loader, phases) {
         p.output.on('write', value => chainedProgram.input.write(value));
     });
 
-    const result = await Promise.all(
+    await Promise.all(
         programs.map(x => x.run())
     );
 

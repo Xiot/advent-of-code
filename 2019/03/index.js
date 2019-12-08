@@ -39,7 +39,7 @@ function* traverse(path) {
 }
 
 let steps1 = 0;
-for (p of traverse(first)) {
+for (let p of traverse(first)) {
     visit(p, 1, ++steps1);
 }
 const crosses = [];

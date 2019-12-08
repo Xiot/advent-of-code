@@ -65,6 +65,8 @@ const you = getBody('YOU');
 function namesOf(path) {
     return path.map(x => x.name);
 }
+
+// eslint-disable-next-line no-unused-vars
 function printNamesOf(path) {
     console.log(path.length, JSON.stringify(namesOf(path)));
 }
