@@ -39,7 +39,7 @@ function part1() {
         .filter(([, value]) => value > 1)
         .length;
     console.log('Overlapping', overlapping);
-    // assert(107663, overlapping, 'Overlapping');
+    assert(107663, overlapping, 'Overlapping');
 }
 
 function part2() {
