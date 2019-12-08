@@ -1,5 +1,5 @@
 import {loadInput, assert, code} from '../common';
-import {sortBy, range} from 'lodash';
+import {sortBy} from 'lodash';
 
 // Step W must be finished before step X can begin.
 const parseRegEx = /Step (\w) must be finished before step (\w) can begin./;
