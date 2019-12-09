@@ -101,56 +101,7 @@ function createLinkedBoard() {
     };
 }
 
-function createBoard() {
-    let board = [0];
-    let current = 0;
-    let currentIndex = 0;
-
-    return {
-        get board() { return board; },
-        play(marble) {
-            current = marble;
-            currentIndex = (currentIndex + 2);
-            if (currentIndex > board.length) { currentIndex = 1;}
-
-            board = [
-                ...board.slice(0, currentIndex),
-                marble,
-                ...board.slice(currentIndex)
-            ];
-        },
-        rule23() {
-            const index = currentIndex < 7
-                ? currentIndex - 7 + board.length
-                : currentIndex - 7;
-
-            const value = board[index];
-            board = [
-                ...board.slice(0, index),
-                ...board.slice(index + 1)
-            ];
-            currentIndex = index;
-            current = board[currentIndex];
-            return value;
-        },
-        get current() {
-            return current;
-        },
-        print() {
-            const bits = board.map(x => {
-                if (x === current) {
-                    return `(${x})`.padStart(4);
-                } else {
-                    return String(x).padStart(3) + ' ';
-                }
-            }).join(' ');
-            console.log(bits);
-        }
-    };
-}
-
 function part1(numPlayers, numMarbles, answer) {
-    // let board = createBoard();
     let board = createLinkedBoard();
     let players = range(0, numPlayers).map(x => ({score: 0, index: x}));
     let currentPlayerIndex = 0;
