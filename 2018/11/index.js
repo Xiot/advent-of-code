@@ -1,5 +1,5 @@
 import {range} from 'lodash';
-import {pointsWithin, assert} from '../common';
+import {pointsWithin, assert, time} from '../common';
 
 const SerialNo = 1718;
 
@@ -40,4 +40,69 @@ function part1() {
     assert('243,34', `${max.x},${max.y}`, 'Cell');
 }
 
-part1();
+function createCache(grid) {
+    const cache = new Map();
+    const keyOf = (x, y, size) => `${x},${y},${size}`;
+
+    return {
+        get(x, y, size, fn) {
+            const key = keyOf(x, y, size);
+            if (cache.has(key)) {
+                return cache.get(key);
+            }
+            const value = fn(grid);
+            cache.set(key, value);
+            return value;
+        }
+    };
+}
+
+function createGrid(size) {
+    return range(0, size).map(y => {
+        return range(0, size).map(x => calculatePowerLevel(x+1,y+1));
+    });
+}
+
+function get(grid, x, y) {
+    return grid[y][x];
+}
+
+function part2() {
+
+    const grid = createGrid(300);
+    const cache = createCache(grid);
+
+    const sumBlock = (x, y, size) => {
+        if (size === 1) {
+            const value = cache.get(x, y, size, g => get(g, x, y));
+            return value;
+        }
+
+        return cache.get(x, y, size, g => {
+            let sum = sumBlock(x, y, size - 1);
+            for(let x1 of range(x, x+size)) {
+                sum += get(g, x1, y+size-1);
+            }
+            for(let y1 of range(y, y + size - 1)) {
+                sum += get(g, x + size - 1, y1);
+            }
+            return sum;
+        });
+    };
+
+    let max = {x:0, y:0, value: Number.MIN_SAFE_INTEGER, size: 0};
+
+    for(let size = 1; size <= 300; size++) {
+        for(let [x, y] of pointsWithin({left: 0, top: 0, right: 300 - size-1, bottom: 300 - size-1})) {
+            const value = sumBlock(x, y, size);
+            if (value > max.value) {
+                max = {x: x+1, y: y+1, size, value};
+            }
+        }
+    }
+
+    console.log(`Result: ${max.x},${max.y},${max.size} = ${max.value}`);
+}
+
+time('part 1',() => part1());
+time('part 2',() => part2());
