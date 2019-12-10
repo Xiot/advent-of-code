@@ -1,5 +1,5 @@
 import {loadInput} from '../common';
-import {minBy, maxBy, range} from 'lodash';
+import {minBy, maxBy} from 'lodash';
 
 const parseRegEx = /position=<\s*(-?\d+),\s*(-?\d+)>\s+velocity=<\s*(-?\d+),\s*(-?\d+)>/;
 const input = () => loadInput(2018, 10)
