@@ -1,7 +1,5 @@
-module.exports = {
-    ...require('./cpu'),
-    ...require('../../utils/assert'),
-    ...require('./array'),
-    ...require('./deferred'),
-    ...require('./stream'),
-};
+export * from '../../utils';
+export * from './cpu';
+export * from './array';
+export * from './deferred';
+export * from './stream';
