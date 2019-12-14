@@ -1,4 +1,4 @@
-import {loadInput, pointsWithin, boundsOfGrid} from '../common';
+import {loadInput, pointsWithin, boundsOfGrid, gcd} from '../common';
 import {sortBy, isEqual} from 'lodash';
 import chalk from 'chalk';
 
@@ -89,18 +89,8 @@ function part1() {
             max = {pos:source, count};
         }
     }
+    console.log('\nPart I');
     console.log(max);
-}
-
-function gcd(a, b) {
-    a = Math.abs(a);
-    b = Math.abs(b);
-    if (a === 0 || b === 0) {
-        return Math.max(a, b);
-    }
-    if (a === b) { return a; }
-    if (a > b) { return gcd(a - b, b); }
-    return gcd(a, b - a);
 }
 
 function normalizedVector([x, y]) {
@@ -108,19 +98,68 @@ function normalizedVector([x, y]) {
     return [x / divisor, y / divisor];
 }
 
-function render(grid, blocked, arr) {
-    const lines = [];
-    for(let y = 0; y < grid.length; y++) {
-        let line = '';
-        for(let x = 0; x < grid[0].length; x++) {
-            const found = arr.find(p => isEqual(p,[x,y] ));
-            line += found
-                ? chalk.bgCyan.black(grid[y][x])
-                : grid[y][x];
+function part2() {
+
+    const {asteroids} = preProcess(input);
+    const source = [23, 20];
+
+    const normalizeAngle = angle => {
+        if (angle < 0) { angle += 360; }
+        return (Math.abs(-angle + 360) + 90) % 360;
+    };
+
+    let remaining = asteroids.map(([x,y]) => {
+
+        const dx = x - source[0];
+        const dy = source[1] - y;
+
+        const degrees = Math.atan2(dy, dx) * 180 / Math.PI;
+        const distance = Math.abs(dx) + Math.abs(dy);
+        return {
+            x,
+            y,
+            angle: normalizeAngle(degrees),
+            distance
+        };
+    }).sort((l, r) => {
+        if (l.angle === r.angle) {
+            return l.distance - r.distance;
         }
-        lines.push(line);
+        return l.angle - r.angle;
+    });
+
+    const order = [];
+    let index = 0;
+    let lastAngle = -1;
+    while (remaining.length > 0) {
+
+        const current = remaining[index];
+        order.push(current);
+        lastAngle = current.angle;
+        remaining = [...remaining.slice(0, index), ...remaining.slice(index + 1)];
+        while(index < remaining.length && lastAngle === remaining[index].angle) {
+            index++;
+        }
+
+        if (index >= remaining.length) {
+            index = 0;
+        }
     }
-    console.log(lines.join('\n'));
+
+    const formatP = x => String(x).padStart(4);
+    const formatA = x => x.toFixed(2).padStart(6);
+    const formatL = x => `(${x.x}, ${x.y})`;
+
+    const printRow = (a, i) =>
+        console.log(`${formatP(i)}] ${formatP(a.x - source[0])} ${formatP(a.y - source[1])}: ${formatA(a.angle)} ${formatL(a)} ${a.distance}`)
+
+    const printRows = (arr, start = 0, end) =>
+        arr.slice(start, end).forEach((x, i) => printRow(x, i + start));
+
+    const target = order[199];
+    console.log('\nPart II');
+    console.log(target.x * 100 + target.y);
 }
 
 part1();
+part2();
