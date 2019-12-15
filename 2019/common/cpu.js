@@ -1,5 +1,3 @@
-// TODO: May move this back to sync
-
 const fs = require('fs');
 const chalk = require('chalk');
 const {range} = require('lodash');
@@ -106,6 +104,11 @@ function toPointer(ctx, param) {
         throw new Error('\'immediate\' parameters can not resolve to pointers');
     }
 }
+const opName = value => Array.from(Object.entries(OpCodes)).find(([, code]) => code === value)[0];
+const log = (ctx, op, ...args) => {
+    if (!ctx.options.debug) { return; }
+    console.log(`${String(ctx.instructionPointer).padStart(5, ' ')}] ${opName(op.code).padEnd(12)}`, ...args);
+};
 
 const opMap = {
     [OpCodes.exit]() {
@@ -115,6 +118,9 @@ const opMap = {
     [OpCodes.add](ctx, op){
         const result = toValue(ctx, op.parameters[0]) + toValue(ctx, op.parameters[1]);
         const address = toPointer(ctx, op.parameters[2]);
+
+        log(ctx, op, toValue(ctx, op.parameters[0]), toValue(ctx, op.parameters[1]), address);
+
         ctx.write(address, result);
         return ctx.advance(op);
     },
@@ -122,12 +128,18 @@ const opMap = {
     [OpCodes.multiply](ctx, op){
         const result = toValue(ctx, op.parameters[0]) * toValue(ctx, op.parameters[1]);
         const address = toPointer(ctx, op.parameters[2]);
+
+        log(ctx, op, toValue(ctx, op.parameters[0]), toValue(ctx, op.parameters[1]), result, address);
+
         ctx.write(address, result);
         return ctx.advance(op);
     },
     async [OpCodes.read](ctx, op) {
         const address = toPointer(ctx, op.parameters[0]);
         const value = await ctx.io.read();
+
+        log(ctx, op, address, value);
+
         if (value == null) {
             throw new Error('read returned null or undefined');
         }
@@ -136,16 +148,20 @@ const opMap = {
     },
     [OpCodes.write](ctx, op) {
         const value = toValue(ctx, op.parameters[0]);
+        log(ctx, op, value);
+
         ctx.io.write(value);
         return ctx.advance(op);
     },
 
     [OpCodes.jumpIfTrue](ctx, op) {
+        log(ctx, op, toValue(ctx, op.parameters[0]) !== 0, toValue(ctx, op.parameters[1]));
         return toValue(ctx, op.parameters[0]) !== 0
             ? ctx.move(toValue(ctx, op.parameters[1]))
             : ctx.advance(op);
     },
     [OpCodes.jumpIfFalse](ctx, op) {
+        log(ctx, op, toValue(ctx, op.parameters[0]) === 0, toValue(ctx, op.parameters[1]));
         return toValue(ctx, op.parameters[0]) === 0
             ? ctx.move(toValue(ctx, op.parameters[1]))
             : ctx.advance(op);
@@ -153,18 +169,26 @@ const opMap = {
     [OpCodes.equal](ctx, op) {
         const isEqual = toValue(ctx, op.parameters[0]) === toValue(ctx, op.parameters[1]);
         const address = toPointer(ctx, op.parameters[2]);
+
+        log(ctx, op, isEqual, address);
+
         ctx.write(address, isEqual ? 1 : 0);
         return ctx.advance(op);
     },
     [OpCodes.lessThan](ctx, op) {
         const lessThan = toValue(ctx, op.parameters[0]) < toValue(ctx, op.parameters[1]);
         const address = toPointer(ctx, op.parameters[2]);
+
+        log(ctx, op, lessThan, address);
+
         ctx.write(address, lessThan ? 1 : 0);
         return ctx.advance(op);
     },
     [OpCodes.setBase](ctx, op) {
         const value = toValue(ctx, op.parameters[0]);
         ctx.registers.base += value;
+        log(ctx, op, value, ctx.registers.base);
+
         return ctx.advance(op);
     }
 };
@@ -178,7 +202,7 @@ function processOperation(ctx, op) {
     return processor(ctx, op);
 }
 
-function asyncIO(input, output, {debug} = {debug: false}) {
+function asyncIO(input, output) {
 
     let lastWrite = undefined;
     return {
@@ -199,7 +223,6 @@ function asyncIO(input, output, {debug} = {debug: false}) {
 }
 
 function createIo(input) {
-    let storedValue = 0;
     let readIndex = 0;
 
     if (!Array.isArray(input)) {
@@ -270,18 +293,8 @@ function createContext(data, io, registers, options) {
 
 async function execute(input, io, opt = {debug: false}) {
 
-    const ctx = createContext(input, io, {base: 0}, opt);
-
-    while (ctx.instructionPointer < input.length) {
-        const op = parseOpCode(input, ctx.instructionPointer);
-        if (op.code === OpCodes.exit) {
-
-            opt.debug && printDebugInformation(ctx, op);
-            break;
-        }
-
-        await processOperation(ctx, op);
-        opt.debug && printDebugInformation(ctx, op);
+    for await (let state of executeIterator(input, io, opt)) {
+        // Run through all operations
     }
     return io.output;
 }
@@ -289,8 +302,8 @@ async function execute(input, io, opt = {debug: false}) {
 async function* executeIterator(input, io, opt = {debug: false}) {
     const ctx = createContext(input, io, {base: 0}, opt);
 
-    while (ctx.instructionPointer < input.length) {
-        const op = parseOpCode(input, ctx.instructionPointer);
+    while (ctx.instructionPointer < ctx.data.length) {
+        const op = parseOpCode(ctx.data, ctx.instructionPointer);
         if (op.code === OpCodes.exit) {
 
             opt.debug && printDebugInformation(ctx, op);
@@ -357,11 +370,79 @@ function printDebugInformation(ctx, op) {
     console.log(`${instructionPointer}] ${clone.map(x => String(x)).join(',')} [${clone.length}]`);
 }
 
+const {prompt} = require('../../utils/io');
+function createInteractiveHandler(opts) {
+    let step = 0;
+    let runUntil = 0;
+    let bp = undefined;
+
+    const filter = opts.filter ?? (() => true);
+    const handler = opts.handler ?? (() => {});
+
+    return async (current) => {
+
+        if (current.done) { return false; }
+
+        if (filter(current) === false) {
+            return true;
+        }
+        step++;
+
+        handler(current);
+        // console.log(current.ctx.instructionPointer, runUntil);
+        if (runUntil !== undefined && step < runUntil) {
+            return true;
+        }
+        if (bp !== undefined && current.ctx.instructionPointer !== bp) {
+            return true;
+        }
+        bp = undefined;
+
+        const answer = await prompt('Run: ');
+        if (answer === 'q') {
+            return false;
+        }
+
+        if (answer === '') {
+            // eslint-disable-next-line require-atomic-updates
+            runUntil = step + 1;
+        } else if (answer.startsWith(':')) {
+            // eslint-disable-next-line require-atomic-updates
+            bp = parseInt(answer.substring(1));
+        } else if (answer === 'end') {
+            // eslint-disable-next-line require-atomic-updates
+            runUntil = 999999;
+        } else {
+            // eslint-disable-next-line require-atomic-updates
+            runUntil = step + parseInt(answer) ?? 1;
+        }
+        return true;
+    };
+}
+
+async function stepExecute(input, io, handler) {
+    const it = executeIterator(input, io, {debug: false});
+
+    // eslint-disable-next-line no-constant-condition
+    while(true) {
+        const x = await it.next();
+
+        const shouldContinue = await handler({done: x.done, ...x.value});
+        if (x.done || !shouldContinue) {
+            break;
+        }
+    }
+}
+
 module.exports = {
     createIo,
     asyncIO,
     execute,
     executeIterator,
     loadProgram,
-    parseProgram
+    parseProgram,
+    OpCodes,
+
+    createInteractiveHandler,
+    stepExecute
 };

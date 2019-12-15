@@ -1,11 +1,24 @@
 import {minBy, maxBy} from 'lodash';
 
 export function* pointsWithin(item) {
-    for(let x = item.left; x <= item.right; x++) {
-        for(let y = item.top; y <= item.bottom; y++) {
+    for(let y = item.top; y <= item.bottom; y++) {
+        for(let x = item.left; x <= item.right; x++) {
             yield [x, y];
         }
     }
+}
+
+export function visualizeGrid(bounds, render) {
+    const lines = [];
+
+    for(let y = bounds.top; y <= bounds.bottom; y++) {
+        let line = '';
+        for(let x = bounds.left; x <= bounds.right; x++) {
+            line += render(x, y);
+        }
+        lines.push(line);
+    }
+    return lines.join('\n');
 }
 
 export const maxOf = (arr, accessor) => accessor(maxBy(arr, accessor));

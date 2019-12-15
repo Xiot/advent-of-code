@@ -12,12 +12,12 @@ class Stream {
             this._writeHandlers.push(callback);
             return () => this._writeHandlers = this._writeHandlers.filter(x => x!== callback);
         }
-        return () => {}
+        return () => {};
     }
 
     async read() {
         if (this.data.length > 0) {
-            return Promise.resolve(this.data.shift())
+            return Promise.resolve(this.data.shift());
         } else {
             this._hold = defer();
             return this._hold.promise;
@@ -29,11 +29,11 @@ class Stream {
             this._hold.resolve(value);
             this._hold = undefined;
         } else {
-            this.data.push(value)
+            this.data.push(value);
         }
         this._writeHandlers.forEach(cb => {
             cb(value);
-        })
+        });
     }
 
     [Symbol.asyncIterator] = async function*() {
@@ -44,4 +44,4 @@ class Stream {
 }
 module.exports = {
     Stream,
-}
+};

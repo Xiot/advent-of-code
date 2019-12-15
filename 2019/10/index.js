@@ -151,7 +151,7 @@ function part2() {
     const formatL = x => `(${x.x}, ${x.y})`;
 
     const printRow = (a, i) =>
-        console.log(`${formatP(i)}] ${formatP(a.x - source[0])} ${formatP(a.y - source[1])}: ${formatA(a.angle)} ${formatL(a)} ${a.distance}`)
+        console.log(`${formatP(i)}] ${formatP(a.x - source[0])} ${formatP(a.y - source[1])}: ${formatA(a.angle)} ${formatL(a)} ${a.distance}`);
 
     const printRows = (arr, start = 0, end) =>
         arr.slice(start, end).forEach((x, i) => printRow(x, i + start));
