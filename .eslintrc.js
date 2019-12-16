@@ -17,6 +17,7 @@ module.exports = {
     parser: 'babel-eslint',
 
     'rules': {
+        'no-constant-condition': 'off',
         'no-unused-vars': 'warn',
         'indent': [
             'error',
