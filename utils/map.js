@@ -44,7 +44,7 @@ function createBounds(initialBounds) {
     };
 }
 
-export function createGripMap(defaulValue) {
+export function createGridMap(defaulValue) {
     const cache = new Map();
     const keyOf = (x, y) => `${x},${y}`;
     const parseKey = key => key.split(',').map(v => parseInt(v));

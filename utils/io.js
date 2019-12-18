@@ -10,3 +10,20 @@ export function prompt(query) {
         resolve(ans);
     }));
 }
+
+export function waitForKey() {
+    readline.emitKeypressEvents(process.stdin);
+    process.stdin.setRawMode(true);
+
+    return new Promise(resolve => {
+        const listener = (str, key) => {
+            process.stdin.off('keypress', listener);
+            if (key.ctrl && key.name === 'c') {
+                process.exit();
+            }
+            resolve(key);
+        };
+        process.stdin.on('keypress', listener);
+
+    });
+}

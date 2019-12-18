@@ -1,6 +1,6 @@
 const {defer} = require('./deferred');
 
-class Stream {
+export class Stream {
     constructor(data) {
         this.data = data ? [...data] : [];
         this._hold = undefined;
@@ -42,6 +42,3 @@ class Stream {
         }
     }
 }
-module.exports = {
-    Stream,
-};

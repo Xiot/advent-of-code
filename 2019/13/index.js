@@ -1,4 +1,4 @@
-import {loadProgram, execute, executeIterator, visualizeGrid, createGripMap} from '../common';
+import {loadProgram, execute, executeIterator, visualizeGrid, createGridMap} from '../common';
 import chalk from 'chalk';
 
 const Tile = {
@@ -40,7 +40,7 @@ function createIo(board, readFn) {
 }
 
 function createGameBoard() {
-    const grid = createGripMap((x, y) => {
+    const grid = createGridMap((x, y) => {
         return {x, y, tile: 0};
     });
 

@@ -1,4 +1,4 @@
-import {createGripMap, loadProgram, execute} from '../common';
+import {createGridMap, loadProgram, execute} from '../common';
 import {visualizeGrid} from '../common';
 import {isEqual} from 'lodash';
 
@@ -166,7 +166,7 @@ function debugPainter(painter, robot) {
 
 
 function createPainter() {
-    const cache = createGripMap((x, y) => {
+    const cache = createGridMap((x, y) => {
         return {
             x,
             y,
