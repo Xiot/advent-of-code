@@ -1,4 +1,4 @@
-import {loadInput, assert, code} from '../common';
+import {loadInput, assert, toCharCode} from '../common';
 import {sortBy} from 'lodash';
 
 // Step W must be finished before step X can begin.
@@ -98,7 +98,7 @@ function part1() {
 }
 
 function taskTime(node) {
-    return 60 + code(node.name) - code('A') + 1;
+    return 60 + toCharCode(node.name) - toCharCode('A') + 1;
 }
 
 function createWorkerQueue(maxWorkers) {

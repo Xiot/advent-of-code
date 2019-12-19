@@ -1,7 +1,7 @@
-export function code(letter) {
+export function toCharCode(letter) {
     return letter.charCodeAt(0);
 }
 
-export function char(ascii) {
+export function toChar(ascii) {
     return String.fromCharCode(ascii);
 }
