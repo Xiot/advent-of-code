@@ -270,6 +270,6 @@ function printGrid(grid, pos, marginLeft) {
 }
 
 (async() => {
-    // await part1();
+    await part1();
     await part2();
 })();
