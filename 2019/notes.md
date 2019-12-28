@@ -2,3 +2,4 @@
 
 Day 16, Part II - Didn't really attempt
 Day 17, Part II - Visually inspected the sequence to determine the ordering.
+Day 18, Part I - Nope
