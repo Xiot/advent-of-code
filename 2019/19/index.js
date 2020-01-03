@@ -19,8 +19,8 @@ async function part1() {
         grid.set(x, y, io.output === 1 ? '#' : '.');
     }
 
-    // const text = visualizeGrid(grid.bounds, (x, y) => grid.get(x, y));
-    // console.log(text);
+    const text = visualizeGrid(grid.bounds, (x, y) => grid.get(x, y));
+    console.log(text);
     console.log('Count', count);
 
     let startIndex = -1;
@@ -58,10 +58,63 @@ async function part1() {
 
 
 async function part2() {
+    const program = loadProgram('2019/19');
 
+    const grid = createGridMap(' ');
+
+    async function calc(x, y) {
+        const cached = grid.get(x, y);
+        if (cached !== ' ') {
+            return cached === '#' ? 1 : 0;
+        }
+
+        const io = createIo([x, y]);
+        await execute(program, io);
+
+        grid.set(x, y, io.output === 1 ? '#' : '.');
+        return io.output;
+    }
+
+    let slope = 49 / 33;
+
+    async function findLeftEdge(x, y) {
+        const initial = await calc(x, y);
+        const distance = 2000;
+        console.log('i', x, y, initial);
+        if (initial === 0) {
+            for(let x1 = x; x1 < x + distance; x1++) {
+                const v = await calc(x1, y);
+                if (v === 1) {
+                    return x1;
+                }
+            }
+        } else {
+            for(let x1 = x; x1 > x - distance; x1--) {
+                const v = await calc(x1, y);
+                if (v === 0) {
+                    return x1 + 1;
+                }
+            }
+        }
+    }
+
+    const vy = x => Math.floor(slope * x);
+
+    let x = 1140;
+    let y = vy(x);
+    while(true) {
+        x = await findLeftEdge(x, y);
+
+        const opp = await calc(x + 99, y - 99);
+        if (opp === 1) {
+            console.log('Final', x, y - 99, x * 10000 + (y - 99));
+            break;
+        }
+        y += 1;
+    }
 }
 
 (async () => {
-    await part1();
+    // await part1();
     await part2();
 })();
