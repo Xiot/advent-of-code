@@ -1,4 +1,3 @@
-import { load } from 'babel-register/lib/cache';
 import {loadInput} from '../../utils';
 
 function part1() {
