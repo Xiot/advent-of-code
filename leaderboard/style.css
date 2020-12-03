@@ -1,9 +1,0 @@
-#ranking-grid {
-  display: grid;
-  grid-template-columns: 20px 200px 40px;
-}
-
-#speed-grid {
-  display: grid;
-  grid-template-columns: 200px 40px 40px;
-}
