@@ -63,13 +63,8 @@ function part2() {
 
     const offset = sorted[0].id;
     const firstMissing = sorted.find((p, i) => p.id !== offset + i);
-    console.log(firstMissing);
-    // sorted.forEach(p => {
-    //     console.log(p.id, p.row, p.seat);
-    // });
 
-    const index = sorted.indexOf(firstMissing);
-    console.log(sorted.slice(index - 2, index + 2));
+    console.log('Part II', firstMissing.id - 1);
 }
 
 part1();
