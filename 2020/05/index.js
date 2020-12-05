@@ -1,4 +1,3 @@
-import { first } from 'lodash';
 import {loadInput} from '../../utils';
 
 function part1() {
