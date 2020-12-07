@@ -19,14 +19,12 @@ function part1() {
         return total;
     }, new Map());
 
-    const sum = Array.from(totals.entries()).reduce((sum, [key, value]) => {
+    const sum = Array.from(totals.entries()).reduce((sum, [, value]) => {
         return sum +value;
     }, 0);
-    const count = totals.size;
+
     console.log('Part I', sum);
 }
-
-const letters = 'abcdefghijklmnopqrstuvwxyz';
 
 function part2() {
     const group = loadInput(2020,6).split('\n\n').map(group => group.split('\n'));
