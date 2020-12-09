@@ -8,7 +8,6 @@ function findInput(name) {
         `./${name}.txt`,
     ].find(x => {
         try {
-            console.log(x);
             const stat = fs.statSync(x);
             return stat.isFile();
         } catch (ex) {
