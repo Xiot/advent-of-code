@@ -44,7 +44,7 @@ function createBounds(initialBounds) {
     };
 }
 
-export function createGridMap(defaulValue) {
+export function createGridMap(defaultValue) {
     const cache = new Map();
     const keyOf = (x, y) => `${x},${y}`;
     const parseKey = key => key.split(',').map(v => parseInt(v));
@@ -52,6 +52,11 @@ export function createGridMap(defaulValue) {
     const bounds = createBounds();
 
     return {
+        clone() {
+            const clone = createGridMap(defaultValue);
+            Array.from(this.entries()).forEach(([{x, y}, value]) => clone.set(x, y, value));
+            return clone;
+        },
         has(x, y) {
             assertPosition(x, y);
             return cache.has(keyOf(x, y));
@@ -62,12 +67,12 @@ export function createGridMap(defaulValue) {
 
             let value = cache.get(keyOf(x, y));
             if (value) { return value; }
-            if (defaulValue === undefined) {
+            if (defaultValue === undefined) {
                 return undefined;
             }
-            value = typeof defaulValue === 'function'
-                ? defaulValue(x, y)
-                : defaulValue;
+            value = typeof defaultValue === 'function'
+                ? defaultValue(x, y)
+                : defaultValue;
 
             return value;
         },
