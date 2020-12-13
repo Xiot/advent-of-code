@@ -3,7 +3,9 @@
         "module": "commonjs",
         "target": "es2017",
         "jsx": "preserve",
-        "lib": ["es2017"]
+        "lib": [
+            "es2020"
+        ],
     },
     "exclude": [
         "node_modules",
