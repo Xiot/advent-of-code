@@ -5,21 +5,36 @@ function assertPosition(x, y) {
     }
 }
 
-function createBounds(initialBounds) {
+export function extendBounds(b, left, top, right, bottom, zMin, zMax) {
+    return createBounds({
+        left:         b.left + left,
+        top: b.top + top,
+        right: b.right + right,
+        bottom: b.bottom + bottom,
+        zMin: b.zMin + (zMin ?? 0),
+        zMax: b.zMax + (zMax ?? 0)
+    });
+}
+
+export function createBounds(initialBounds) {
     let bounds = initialBounds;
 
-    function set(left, top, right, bottom) {
-        bounds = {left, top, right, bottom};
+    function set(left, top, right, bottom, zMin, zMax) {
+        bounds = {left, top, right, bottom, zMin, zMax};
     }
 
     return {
-        get left() {return bounds?.left;},
-        get right() {return bounds?.right;},
-        get top() {return bounds?.top;},
-        get bottom() {return bounds?.bottom; },
+        get left() {return bounds?.left ?? 0;},
+        get right() {return bounds?.right ?? 0;},
+        get top() {return bounds?.top ?? 0;},
+        get bottom() {return bounds?.bottom ?? 0; },
+
+        get zMin() {return bounds?.zMin ?? 0; },
+        get zMax() {return bounds?.zMax ?? 0; },
 
         get width() {return !bounds ? undefined : bounds.right - bounds.left + 1;},
         get height() {return !bounds ? undefined : bounds.bottom - bounds.top + 1;},
+        get depth() {return this.zMax - this.zMin + 1;},
 
         toJSON() {
             return bounds;
@@ -28,15 +43,17 @@ function createBounds(initialBounds) {
             return bounds;
         },
 
-        mark(x, y) {
+        mark(x, y, z = 0) {
             if (!bounds) {
-                set(x, y, x, y);
+                set(x, y, x, y, z, z);
             } else {
                 set(
                     Math.min(this.left, x),
                     Math.min(this.top, y),
                     Math.max(this.right, x),
-                    Math.max(this.bottom, y)
+                    Math.max(this.bottom, y),
+                    Math.min(this.zMin, z),
+                    Math.max(this.zMax, z)
                 );
             }
             return this;

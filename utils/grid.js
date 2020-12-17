@@ -1,9 +1,11 @@
 import {minBy, maxBy} from 'lodash';
 
 export function* pointsWithin(item) {
-    for(let y = item.top; y <= item.bottom; y++) {
-        for(let x = item.left; x <= item.right; x++) {
-            yield [x, y];
+    for(let z = item.zMin; z <= item.zMax; z++) {
+        for(let y = item.top; y <= item.bottom; y++) {
+            for(let x = item.left; x <= item.right; x++) {
+                yield [x, y, z];
+            }
         }
     }
 }
