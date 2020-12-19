@@ -18,7 +18,6 @@ function part2(input) {
     const sum = lines.reduce((sum, line) => {
         const t = tokenize(line);
         const v = evaluateTokensWithOrder(t);
-        console.log(line, v);
         return sum + v;
     }, 0);
     return sum;
