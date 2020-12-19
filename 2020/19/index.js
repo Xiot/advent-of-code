@@ -1,16 +1,14 @@
-import {loadInput} from '../../utils';
+import {loadInput, createLog} from '../../utils';
 
-const ENABLE_LOGGING = true;
+const l = createLog();
 
 function part1(input) {
     const {rules, messages} = parseInput(input);
-    console.log(rules);
-    console.log(rules.has('4'), rules.has('0'));
 
     const count = messages.map((msg) => {
         const isMatch = matches(rules, msg);
-        console.log(msg, isMatch);
-        return isMatch.valid ? 1 : 0;
+        // console.log(msg, isMatch);
+        return isMatch ? 1 : 0;
     }, 0);
     return count.reduce((sum, value) => sum + value);
 }
@@ -35,50 +33,27 @@ function part2(input) {
 
     const count = messages.map((msg) => {
         const isMatch = matches(rules, msg);
-        console.log(msg, isMatch);
-        return isMatch.valid ? 1 : 0;
+        // console.log(msg, isMatch);
+        return isMatch ? 1 : 0;
     }, 0);
     return count.reduce((sum, value) => sum + value);
 }
 
-const l = createLog();
-
 function matches(rules, msg) {
     l.push('TOP: ', msg);
     const ret = matchRule(rules, '0', msg);
-    l.pop('BOTTOM:', msg, ret);
+    l.pop('BOTTOM:', msg, msg.length, ret);
     l.log('');
-    if (msg.length !== ret.length) {
-        return {valid: false, code: 'invalid length'};
-    }
-    return ret;
-}
 
-function createLog() {
-
-    let depth = 0;
-    const indent =  () =>' '.repeat(depth * 2);
-    return {
-        push(msg,...args) {
-            if (!ENABLE_LOGGING) return;
-            console.log(indent(), msg, ...args);
-            depth++;
-        },
-        pop(msg, ...args) {
-            if (!ENABLE_LOGGING) return;
-            depth --;
-            console.log(indent(), msg, ...args);
-        },
-        log(msg, ...args) {
-            if (!ENABLE_LOGGING) return;
-            console.log(indent(), msg, ...args);
-        }
-    };
+    return ret.filter(x => x.length === msg.length).length > 0;
 }
 
 function matchRule(rules, id, msg) {
 
     const rule = rules.get(id);
+    if (!rule) {
+        console.log('rule not found', id);
+    }
     l.push('check', rule.id, rule.type, msg);
 
     let r;
@@ -100,39 +75,44 @@ function matchRule(rules, id, msg) {
 function matchRuleset(rules, rule, msg) {
 
     const found = [];
-
     for(let i = 0; i < rule.rules.length; i++) {
         let offset = 0;
         const ids = rule.rules[i];
-        let count = 0;
-        for (let r = 0; r < ids.length; r++) {
-            const ret = matchRule(rules, ids[r], msg.slice(offset));
-            if (!ret.valid) break;
-            offset += ret.length;
-            count+=1;
+
+        const left = matchRule(rules, ids[0], msg.slice(offset));
+        const validLeft = left.filter(x => x.valid);
+        if (ids.length === 1) {
+            found.push(...validLeft);
+            continue;
         }
 
-        if (count === ids.length) {
-            found.push({
-                valid: true, length: offset
-            });
+        for(let lr of validLeft) {
+            const right = matchRule(rules, ids[1], msg.slice(offset + lr.length))
+                .filter(r => r.valid);
+            if (ids.length === 2) {
+                found.push(...right.map(r => ({valid: true, length: lr.length + r.length})));
+                continue;
+            }
+            for (let rr of right) {
+                const last = matchRule(rules, ids[2], msg.slice(offset + lr.length + rr.length))
+                    .filter(r => r.valid);
+                found.push(...last.map(l => ({valid: true, length: lr.length + rr.length + l.length})));
+            }
         }
     }
-    if (found.length === 0) {
-        return {valid: false};
+
+    l.log(found.length);
+    if (rule.id === '0') {
+        return found;
     }
-    if (found.length === 1) {
-        return found[0];
-    }
-    console.log('FOUND 2', rule.id, msg);
-    return found[0];
+    return found;
 }
 
 function matchChar(rule, msg, index) {
-    return {
-        valid: rule.value === msg[index],
-        length: 1
-    };
+    const valid = rule.value === msg[index];
+    return valid
+        ? [{valid, length: 1}]
+        : [];
 }
 
 function parseInput(input) {
@@ -167,7 +147,7 @@ function parseRules(lines) {
 }
 
 (function solve() {
-    const input = loadInput(2020, 19, 'sample2');
-    // console.log('Part I :', part1(input));
+    const input = loadInput(2020, 19);
+    console.log('Part I :', part1(input));
     console.log('Part II:', part2(input));
 })();
