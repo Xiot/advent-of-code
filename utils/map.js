@@ -61,6 +61,16 @@ export function createBounds(initialBounds) {
     };
 }
 
+export function loadGrid(data, defaultValue) {
+    const grid = createGridMap(defaultValue);
+    for(let y = 0; y < data.length; y++) {
+        for(let x = 0; x < data[0].length; x++) {
+            grid.set(x, y, data[y][x]);
+        }
+    }
+    return grid;
+}
+
 export function createGridMap(defaultValue) {
     const cache = new Map();
     const keyOf = (x, y) => `${x},${y}`;

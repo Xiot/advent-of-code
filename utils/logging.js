@@ -9,14 +9,16 @@ export function createLog(opts = {enable: defaultLogging}) {
             depth = 0;
         },
         push(...args) {
-            console.group(...args);
+            // console.group(...args);
+            log(...args);
             depth++;
         },
         pop(...args) {
             depth --;
-            console.groupEnd();
+            // console.groupEnd();
+            log(...args);
             args.length > 0 && console.log(...args);
         },
-        log: console.log.bind(console)
+        log: log, //console.log.bind(console)
     };
 };
