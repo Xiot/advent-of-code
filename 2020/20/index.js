@@ -1,7 +1,6 @@
 import {loadInput, range, loadGrid, createGridMap, createBounds, pointsWithin, visualizeGrid, extendBounds} from '../../utils';
 
 const SIZE = 10;
-const LAST_INDEX = SIZE - 1;
 
 const SIDES = {
     top: 0,
@@ -72,7 +71,9 @@ function part1(input) {
     const tiles = parseTiles(input);
 
     const ret = findGrid(tiles);
-
+    if (!ret) {
+        return null;
+    }
     const length = Math.sqrt(tiles.length);
 
     const idOf = (x,y) => ret.get(x,y).tile.id;
@@ -82,13 +83,26 @@ function part1(input) {
         idOf(length -1, length -1),
         idOf(0, length - 1)
     ];
+    console.log(ids);
     return ids.reduce((mul, id) => mul * id);
+}
+
+function gridSizeFrom(tiles) {
+    const gridSize = Math.sqrt(tiles.length);
+    return {x: gridSize, y: gridSize };
+}
+
+function tileSizeFrom(tiles) {
+    const first = tiles[0].lines;
+    return {
+        x: first[0].length,
+        y: first.length,
+    };
 }
 
 const monster = loadInput(2020, 20, 'monster').split('\n');
 function part2(input) {
     const tiles = parseTiles(input);
-    const length = Math.sqrt(tiles.length);
 
     const gridTiles = findGrid(tiles);
     const picture = createGridMap();
@@ -96,10 +110,14 @@ function part2(input) {
     const CELL_LENGTH = 10;
     const imageBounds = createBounds({left: 1, top: 1, right: CELL_LENGTH - 2, bottom: CELL_LENGTH - 2});
 
-    for(let iy = 0; iy < length; iy++) {
-        for(let ix = 0; ix < length; ix++) {
+    const gridSize = gridSizeFrom(tiles);
+    const cellSize = tileSizeFrom(tiles);
+
+    console.log(gridSize, cellSize);
+    for(let iy = 0; iy < gridSize.y; iy++) {
+        for(let ix = 0; ix < gridSize.x; ix++) {
             const image = gridTiles.get(ix, iy);
-            const accessor = getValue(stateAccessor(image.state))(image.tile);
+            const accessor = getValue(stateAccessor(image.state, cellSize))(image.tile);
 
             for(let [x, y] of pointsWithin(imageBounds)) {
                 picture.set(
@@ -110,7 +128,6 @@ function part2(input) {
             }
         }
     }
-    console.log(picture.bounds.toJSON());
 
     const pictureImage = visualizeGrid(picture.bounds, (x,y) => picture.get(x, y))
         .split('\n').reverse().join('\n');
@@ -119,28 +136,38 @@ function part2(input) {
     console.log();
 
     const pictureTiles = {lines: pictureImage.split('\n')};
-    console.log(pictureTiles.lines.length, pictureTiles.lines[0].length);
-    const b = extendBounds(picture.bounds, 0, 0, -monster[0].length, -monster.length);
+    const searchBounds = extendBounds(picture.bounds, 0, 0, -monster[0].length, -monster.length);
+
+    const pictureSize = tileSizeFrom([pictureTiles]);
+
+    let totalChop = 0;
+    for(let [x,y] of pointsWithin(picture.bounds)) {
+        if (picture.get(x, y) === '#') {
+            totalChop +=1;
+        }
+    }
 
     for(let state of states) {
-        console.log(state);
-        const accessor = getValue(stateAccessor(state))(pictureTiles); //stateAccessor(state)()
+
+        const accessor = getValue(stateAccessor(state, pictureSize))(pictureTiles);
         const monsters = [];
-        for(let [x,y] of pointsWithin(b)) {
+
+        for(let [x,y] of pointsWithin(searchBounds)) {
             const m = findMonster(accessor, x, y);
             if (m)
                 monsters.push(m);
         }
+
         if (monsters.length > 0) {
-            console.log(state, monsters);
-            return monsters.reduce((sum, m) => sum + m.chop);
+            console.log( monsters);
+            const removeMonsters = totalChop - monsters.length * 15;
+            return removeMonsters;
         }
     }
     return undefined;
 }
 
 function findMonster(accessor, x, y) {
-    // console.log('findMonster', x, y);
     let chop = 0;
     for(let my = 0; my < monster.length; my++) {
         for(let mx = 0; mx < monster[0].length; mx++) {
@@ -162,8 +189,9 @@ function findMonster(accessor, x, y) {
 
 function printTile(tile, state) {
     const length = tile.lines.length;
+    const size = {x: length, y: length};
     const l = [];
-    const valueAccessor = getValue(stateAccessor(state))(tile);
+    const valueAccessor = getValue(stateAccessor(state, size))(tile);
     for(let y = 0; y < length; y++) {
         l[y] = '';
         for(let x = 0; x < length; x++) {
@@ -174,13 +202,14 @@ function printTile(tile, state) {
 };
 
 function findGrid(tiles) {
-    const length = Math.sqrt(tiles.length);
+    const gridSize = gridSizeFrom(tiles);
+    console.log(gridSize);
     for (let state of states) {
         for(let t = 0; t < tiles.length; t++) {
             const tile = tiles[t];
             const ret = createGridMap();
             ret.set(0, 0, {tile, state});
-            const r = recurse(ret, removeAt(tiles, t), 1, length);
+            const r = recurse(ret, removeAt(tiles, t), 1, gridSize);
             if (r.length > 0) {
                 return r[0];
             }
@@ -190,22 +219,23 @@ function findGrid(tiles) {
 }
 
 function positionOf(cell, size) {
-    const y = Math.floor(cell / size);
-    const x = cell % size;
+    const y = Math.floor(cell / size.x);
+    const x = cell % size.x;
     return {x, y};
 }
 
 const removeAt = (arr, index) => arr.filter((v,i) => i !== index);
 const removeTile = (arr, tile) => arr.filter(x => x !== tile);
 
-function recurse(ret, tiles, cell, size) {
+function recurse(ret, tiles, cell, gridSize) {
 
     if (tiles.length === 0) {
         return [ret];
     }
 
-    const pos = positionOf(cell, size);
-    const possibles = tiles.flatMap(t => canFit(ret, t, cell, size));
+    const pos = positionOf(cell, gridSize);
+
+    const possibles = tiles.flatMap(t => canFit(ret, t, cell, gridSize));
 
     const r = [];
     for(let p of possibles) {
@@ -215,20 +245,21 @@ function recurse(ret, tiles, cell, size) {
             mret,
             removeTile(tiles, p.tile),
             cell+1,
-            size
+            gridSize
         ));
     }
-
     return r;
 }
 
-function canFit(ret, tile, cell, size) {
+function canFit(ret, tile, cell, gridSize) {
+    const tileSize = tileSizeFrom([tile]);
+
     const r = [];
     const checkLeft = (tile, state, x, y) => {
         if (x <= 0) return true;
         const leftTile = ret.get(x-1, y);
-        const expected = total(leftTile.state, SIDES.right)(leftTile.tile);
-        const actual = total(state, SIDES.left)(tile);
+        const expected = total(leftTile.state, tileSize, SIDES.right)(leftTile.tile);
+        const actual = total(state, tileSize, SIDES.left)(tile);
         return actual === expected;
     };
 
@@ -236,12 +267,12 @@ function canFit(ret, tile, cell, size) {
         if (y <= 0) return true;
 
         const topTile = ret.get(x, y-1);
-        const expected = total(topTile.state, SIDES.bottom)(topTile.tile);
-        const actual = total(state, SIDES.top)(tile);
+        const expected = total(topTile.state, tileSize, SIDES.bottom)(topTile.tile);
+        const actual = total(state, tileSize, SIDES.top)(tile);
         return actual === expected;
     };
 
-    const pos = positionOf(cell, size);
+    const pos = positionOf(cell, gridSize);
     for(let state of states) {
         if (checkLeft(tile, state, pos.x, pos.y) && checkTop(tile, state, pos.x, pos.y)) {
             r.push({
@@ -250,64 +281,57 @@ function canFit(ret, tile, cell, size) {
             });
         }
     }
+
     return r;
 }
 
-const total = (state, side) => tile =>
-    borderOfAccessor(side)(stateAccessor(state))(tile);
+const total = (state, size, side) => tile =>
+    borderOfAccessor(side,size)(stateAccessor(state, size))(tile);
 
-function stateAccessor(state) {
-    return rotateAccessor(flipAccessor(identity, state.flip), state.rotate);
+function stateAccessor(state, size) {
+    return rotateAccessor(flipAccessor(identity, size, state.flip), size, state.rotate);
 }
 
-function flipAccessor(accessor, flip) {
+function flipAccessor(accessor, size, flip) {
     switch (flip) {
     case FLIPS.none: return accessor;
-    case FLIPS.x: return (x, y) => accessor(LAST_INDEX - x, y);
-    case FLIPS.y: return (x, y) => accessor(x, LAST_INDEX - y);
-    case FLIPS.xy: return (x, y) => accessor(LAST_INDEX - x, LAST_INDEX - y);
+    case FLIPS.x: return (x, y) => accessor(size.x -1 - x, y);
+    case FLIPS.y: return (x, y) => accessor(x, size.y-1 - y);
+    case FLIPS.xy: return (x, y) => accessor(size.x-1 - x, size.y-1 - y);
     }
     throw new Error(`invalid flip. ${flip}`);
 };
 
-function rotateAccessor(accessor, rotate) {
+function rotateAccessor(accessor, size, rotate) {
     switch(rotate) {
     case ROTATIONS.none: return accessor;
-    case ROTATIONS.one: return (x, y) => accessor(LAST_INDEX - y, x);
-    case ROTATIONS.two: return (x, y) => accessor(LAST_INDEX - x, LAST_INDEX - y);
-    case ROTATIONS.three: return (x, y) => accessor(y, LAST_INDEX - x);
+    case ROTATIONS.one: return (x, y) => accessor(size.x-1 - y, x);
+    case ROTATIONS.two: return (x, y) => accessor(size.x-1 - x, size.y-1 - y);
+    case ROTATIONS.three: return (x, y) => accessor(y, size.x-1 - x);
     }
     throw new Error(`invalid rotate. ${rotate}`);
 };
 
-function borderOfAccessor(side) {
+function borderOfAccessor(side, size) {
 
     return accessor => tile => {
         const valueAt = getValue(accessor)(tile);
         switch(side) {
         case SIDES.top:
-            return range(0, LAST_INDEX).map(x => {
+            return range(0, size.x-1).map(x => {
                 return valueAt(x, 0);
-                // const pos = accessor(x, 0);
-                // return tile.lines[pos[1]][pos[0]];
             }).join('');
         case SIDES.bottom:
-            return range(0, LAST_INDEX).map(x => {
-                return valueAt(x, LAST_INDEX);
-                // const pos = accessor(x, LAST_INDEX);
-                // return tile.lines[pos[1]][pos[0]];
+            return range(0, size.x-1).map(x => {
+                return valueAt(x, size.y-1);
             }).join('');
         case SIDES.left:
-            return range(0, LAST_INDEX).map(y => {
+            return range(0, size.y-1).map(y => {
                 return valueAt(0, y);
-                // const pos = accessor(0, y);
-                // return tile.lines[pos[1]][pos[0]];
             }).join('');
         case SIDES.right:
-            return range(0, LAST_INDEX).map(y => {
-                return valueAt(LAST_INDEX, y);
-                // const pos = accessor(LAST_INDEX, y);
-                // return tile.lines[pos.y][pos.x];
+            return range(0, size.y-1).map(y => {
+                return valueAt(size.x-1, y);
             }).join('');
         }
     };
@@ -325,8 +349,8 @@ function parseTiles(input) {
 }
 
 (function solve() {
-    const input = loadInput(2020, 20, 'sample');
+    const input = loadInput(2020, 20);
     console.log('=======================');
-    // console.log('Part I :', part1(input));
+    console.log('Part I :', part1(input));
     console.log('Part II:', part2(input));
 })();
