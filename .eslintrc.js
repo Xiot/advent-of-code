@@ -16,7 +16,7 @@ module.exports = {
         'sourceType': 'module'
     },
     parser: 'babel-eslint',
-
+    'exclude': [],
     'rules': {
         'no-constant-condition': 'off',
         'no-unused-vars': 'warn',
