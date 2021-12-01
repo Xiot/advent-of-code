@@ -43,5 +43,5 @@ function trimLeading(text) {
     const lines = text.split('\n');
     const amountToTrim = lines[1].match(/^\s+/)[0].length;
 
-    return lines.map(line => line.replace(`^\s{${amountToTrim}}`, '')).join('\n');
+    return lines.map(line => line.replace(`^\\s{${amountToTrim}}`, '')).join('\n');
 }
