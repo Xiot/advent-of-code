@@ -12,12 +12,12 @@ if (!year || ! day) {
 }
 const folder = `./${year}/${String(day).padStart(2, '0')}`;
 
-const unlockDate = new Date(year, 12, day, 0, 0, 5);
-const timeToWait = Math.max(0, unlockDate.valueOf() - Date.now());
-console.log(timeToWait);
+const unlockDate = new Date(year, 11, day, 0, 0, 5);
 
-// delay(timeToWait)
-waitUntil(unlockDate.valueOf(), remaining => console.log(`T-${Math.ceil(remaining / 1000)}`))
+waitUntil(unlockDate.valueOf(), remaining => {
+    console.log(formatDuration(remaining));
+})
+    .then(() => launch(year, day))
     .then(() => download(year, day))
     .then(result => writeInput(result));
 
@@ -45,6 +45,28 @@ function download(year, day) {
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+function launch(year, day) {
+    require('child_process').exec(`open https://adventofcode.com/${year}/day/${day}`);
+}
+
+function formatDuration(ms) {
+    switch(true){
+    case ms < 1000: 
+        return `${ms}ms`;
+    case ms < 60 * 1000: 
+        return `${Math.floor(ms / 1000)}s`;
+    case ms < 60 * 60 * 1000: {
+        ms /= 1000;
+        const min = Math.floor(ms / 60);
+        const sec = Math.floor(ms - min * 60);
+        return `${min}m ${String(sec).padStart(2, '0')}s`;
+    }
+    default: 
+        return`${ms / 1000 / 60}m`;
+    }
+}
+
 function waitUntil(ms, onTick) {
     return new Promise(resolve => {
         const tick = () => {
