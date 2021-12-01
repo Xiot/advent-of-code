@@ -13,10 +13,9 @@ module.exports = {
     },
     'parserOptions': {
         'ecmaVersion': 2018,
-        'sourceType': 'module'
+        // 'sourceType': 'module'
     },
-    parser: 'babel-eslint',
-    'exclude': [],
+    parser: '@babel/eslint-parser',
     'rules': {
         'no-constant-condition': 'off',
         'no-unused-vars': 'warn',
