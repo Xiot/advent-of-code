@@ -18,7 +18,9 @@ export const initialize = (year, day) => {
 
 function createTemplate() {
   return trimLeading(`
-    export const parse = undefined;
+    import { autoParse } from "../../utils";
+    
+    export const parse = autoParse();
 
     export function part1(input) {
     
@@ -34,7 +36,6 @@ function trimLeading(text) {
   const lines = text.split('\n');
   const amountToTrim = lines[1].match(/^\s+/)[0].length;
 
-  const leadingSpaceRe = new RegExp(`^\\s{${amountToTrim}}`);
-  console.log('trim', leadingSpaceRe);
+  const leadingSpaceRe = new RegExp(`^\\s{${amountToTrim}}`);  
   return lines.map(line => line.replace(leadingSpaceRe, '')).join('\n');
 }

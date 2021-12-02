@@ -10,6 +10,7 @@ module.exports = {
 
     let part = 1;
     let inputName = 'sample.txt';
+    let debug = true;
 
     function launch(year, day, part, inputName) {
       let questionResult;
@@ -26,11 +27,12 @@ module.exports = {
       child.on('message', result => {
         questionResult = result;
       });
-      child.stdout.on('data', data => {
+
+      debug && child.stdout.on('data', data => {
         hasOutput = true;
-        process.stdout.write('> ');
         process.stdout.write(data);
       });
+
       child.stderr.on('data', data => process.stderr.write(data));
       child.on('close', () => {
         hasOutput && console.log('='.repeat(30));
@@ -50,8 +52,8 @@ module.exports = {
 
     launch(year, day, part, inputName);
 
-    while (true) {
-      console.log('s = sample, i = input, 1 = part1, 2 = part2, q = quit');
+    console.log('s = sample, i = input, 1 = part1, 2 = part2, d = debug, q = quit');
+    while (true) {      
       const key = (await waitForKey()).name;
 
       if (key === 'q') break;
@@ -62,8 +64,12 @@ module.exports = {
         inputName = 'input.txt';
       } else if (key === '1') {
         part = 1;
+        inputName = 'sample.txt';
       } else if (key === '2') {
         part = 2;
+        inputName = 'sample.txt';
+      } else if (key === 'd') {
+        debug = !debug;      
       } else {
         continue;
       }
