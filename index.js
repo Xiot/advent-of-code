@@ -1,11 +1,23 @@
 require('@babel/register');
 require('dotenv').config();
 
-const [year, day] = process.argv.slice(2).map(x => isNaN(x) ? x : parseInt(x));
-if (!year || ! day) {
-    console.log('Usage \'node index.js <year> <day>\'');
-    process.exit(-1);
-}
-const folder = `./${year}/${String(day).padStart(2, '0')}`;
+const { args } = require('./scripts/utils');
 
-require(folder);
+const { initialize } = require('./scripts/init');
+const { download } = require('./scripts/download');
+const { watch } = require('./scripts/watch');
+
+const commands = {
+  init: initialize,
+  download,
+  watch,
+};
+
+const [name, year, day] = args();
+
+const cmd = commands[name];
+if (!cmd) {
+  process.exit(0);
+}
+
+cmd(year, day);
