@@ -13,11 +13,11 @@ const commands = {
   watch,
 };
 
-const [name, year, day] = args();
+const [name, year, day, ...rest] = args();
 
 const cmd = commands[name];
 if (!cmd) {
   process.exit(0);
 }
 
-cmd(year, day);
+cmd(year, day, ...rest);

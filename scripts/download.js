@@ -4,8 +4,9 @@ const process = require('process');
 const fs = require('fs');
 const fetch = require('node-fetch');
 
-export const download = (year, day) => {
-  const unlockDate = new Date(year, 11, day, 0, 0, 5);
+export const download = (year, day, timeText = "00:00") => {
+  const time = parseTime(timeText);
+  const unlockDate = new Date(year, 11, day, time.hour, time.minute, 5);
 
   waitUntil(unlockDate.valueOf(), remaining => {
     console.log(formatDuration(remaining));
@@ -14,6 +15,10 @@ export const download = (year, day) => {
     .then(() => downloadInput(year, day))
     .then(result => writeInput(result));
 };
+function parseTime(time) {
+  const parts = time.split(':').map(x => parseInt(x));
+  return {hour: parts[0] ?? 0, minute: parts[1] ?? 0};
+}
 
 function writeInput({ year, day, text }) {
   fs.writeFileSync(buildFilename(year, day, 'input.txt'), text);
