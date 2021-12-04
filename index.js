@@ -11,6 +11,7 @@ const commands = {
   init: initialize,
   download,
   watch,
+  ready: (year, day) => download(year, day).then(() => watch(year, day))
 };
 
 const [name, year, day, ...rest] = args();

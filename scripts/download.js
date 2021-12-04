@@ -4,11 +4,11 @@ const process = require('process');
 const fs = require('fs');
 const fetch = require('node-fetch');
 
-export const download = (year, day, timeText = "00:00") => {
+export const download = (year, day, timeText = "00:01") => {
   const time = parseTime(timeText);
   const unlockDate = new Date(year, 11, day, time.hour, time.minute, 5);
 
-  waitUntil(unlockDate.valueOf(), remaining => {
+  return waitUntil(unlockDate.valueOf(), remaining => {
     console.log(formatDuration(remaining));
   })
     .then(() => launch(year, day))
