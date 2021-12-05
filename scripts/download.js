@@ -1,4 +1,5 @@
 import { buildFilename } from './utils';
+import { nextLine, showCursor, updateLine } from './terminal';
 
 const process = require('process');
 const fs = require('fs');
@@ -8,13 +9,24 @@ export const download = (year, day, timeText = "00:01") => {
   const time = parseTime(timeText);
   const unlockDate = new Date(year, 11, day, time.hour, time.minute, 5);
 
+  showCursor(false);
+  
   return waitUntil(unlockDate.valueOf(), remaining => {
-    console.log(formatDuration(remaining));
+    if (remaining >= 1000) {
+      updateLine(`Launching in ${formatDuration(remaining)}`);          
+    }
   })
+    .then(() => updateLine('Launching ...'))
     .then(() => launch(year, day))
+    .then(() => nextLine('Downloading ...'))
     .then(() => downloadInput(year, day))
     .then(result => writeInput(result))
-    .then(() => markStartTime(year, day, Date.now()));
+    .then(() => nextLine('Recording Start Time ...'))
+    .then(() => markStartTime(year, day, Date.now()))
+    .finally(() => {
+      nextLine('');
+      showCursor(true);
+    });
 };
 function parseTime(time) {
   const parts = time.split(':').map(x => parseInt(x));
@@ -25,8 +37,7 @@ function writeInput({ year, day, text }) {
   fs.writeFileSync(buildFilename(year, day, 'input.txt'), text);
 }
 
-function downloadInput(year, day) {
-  console.log('downloading');
+function downloadInput(year, day) {    
   return fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
     headers: {
       cookie: process.env.AOC_COOKIE,
@@ -46,7 +57,7 @@ function downloadInput(year, day) {
 function markStartTime(year, day, time) {
   return fetch(`https://portal.xiot.ca/aoc/${year}/overrides.json`, {
     method: 'PATCH',
-    data: JSON.stringify({
+    body: JSON.stringify({
       id: "682929",
       day,
       time
@@ -62,20 +73,27 @@ function launch(year, day) {
 }
 
 function formatDuration(ms) {
-  switch (true) {
-  case ms < 1000:
-    return `${ms}ms`;
-  case ms < 60 * 1000:
-    return `${Math.floor(ms / 1000)}s`;
-  case ms < 60 * 60 * 1000: {
-    ms /= 1000;
-    const min = Math.floor(ms / 60);
-    const sec = Math.floor(ms - min * 60);
-    return `${min}m ${String(sec).padStart(2, '0')}s`;
+    
+  const units = [60, 60];
+  let parts = [];
+
+  let remaining = Math.floor(ms / 1000);  
+  for(let unit of units) {
+    const whole = Math.floor(remaining / unit);
+    const fractional = remaining - whole * unit;
+
+    parts.push(fractional);
+    remaining = whole;
+    if (remaining <= 0) break;
   }
-  default:
-    return `${ms / 1000 / 60}m`;
+
+  if (remaining > 0) {
+    parts.push(remaining);
   }
+
+  return parts.reverse().map((value, index) => {
+    return(index === 0 ? String(value) : String(value).padStart(2, '0'));
+  }).join(':');  
 }
 
 function waitUntil(ms, onTick) {
