@@ -6,6 +6,7 @@ function updateLine(text) {
   const out = process.stdout;
   out.cursorTo(0);
   out.write(text);
+  out.clearLine(1);
 }
 
 function nextLine(text) {
