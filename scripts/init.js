@@ -6,6 +6,9 @@ const path = require('path');
 export const initialize = (year, day) => {
   const folder = solutionPath(year, day);
 
+  if (fs.existsSync(folder)) {
+    return Promise.resolve();
+  } 
   // Create the folder
   fs.mkdirSync(folder, { recursive: true });
 
@@ -14,6 +17,7 @@ export const initialize = (year, day) => {
     fs.writeFileSync(templateFile, createTemplate());
     fs.writeFileSync(path.join(folder, 'sample.txt'), '');
   }
+  return Promise.resolve();
 };
 
 function createTemplate() {

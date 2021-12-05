@@ -11,7 +11,11 @@ const commands = {
   init: initialize,
   download,
   watch,
-  ready: (year, day) => download(year, day).then(() => watch(year, day))
+  ready: async (year, day) => {
+    await initialize(year, day);
+    await download(year, day);
+    await watch(year, day);
+  }
 };
 
 const [name, year, day, ...rest] = args();

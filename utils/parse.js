@@ -6,6 +6,10 @@ export function byLine(lineParser = line => line) {
   return text => text.split('\n').map(lineParser);
 }
 
+export function bySection() {
+  return text => text.split('\n\n');
+}
+
 export function autoParse(fn = x => x) {
   return byLine(line => fn(line.split(' ').map(x => maybeNumber(x))));
 }
