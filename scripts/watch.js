@@ -2,6 +2,7 @@ const chokidar = require('chokidar');
 const { fork } = require('child_process');
 const { waitForKey } = require('../utils/io');
 const { buildFilename } = require('./utils');
+const { debounce } = require('lodash');
 
 module.exports = {
   async watch(year, day) {
@@ -12,7 +13,15 @@ module.exports = {
     let inputName = 'sample.txt';
     let debug = true;
 
+    let currentChild;
     function launch(year, day, part, inputName) {
+      
+      if (currentChild) {
+        if (currentChild.exitCode === null) {
+          currentChild.kill();
+        }
+      }      
+      
       let questionResult;
       let hasOutput = false;
 
@@ -34,21 +43,27 @@ module.exports = {
       });
 
       child.stderr.on('data', data => process.stderr.write(data));
-      child.on('close', () => {
+      child.on('close', (code, signal) => {
+        if (signal === 'SIGTERM') {         
+          return;
+        }
         hasOutput && console.log('='.repeat(30));
         if (questionResult) {
           console.log(`${formatDuration(questionResult.duration)} Part ${'I'.repeat(part)}: ${questionResult.result}`);
         }
       });
+      currentChild = child;
+      return child;
     }
 
     const watcher = chokidar.watch(filename, {
       persistent: true,
+      atomic: true
     });
-
-    watcher.on('change', () => {
+    
+    watcher.on('change', debounce(() => {
       launch(year, day, part, inputName);
-    });
+    }, 2000, {leading: true, trailing: false}));
 
     launch(year, day, part, inputName);
 

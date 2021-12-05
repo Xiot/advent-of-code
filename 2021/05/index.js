@@ -1,5 +1,5 @@
 
-import { autoParse, byLine, createGridMap, visualizeGrid } from "../../utils";
+import { byLine, createGridMap, time, visualizeGrid } from "../../utils";
 
 export const parse = byLine(line => {
   const re = /([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)/;
@@ -37,12 +37,8 @@ export function part1(input) {
       }
     }
   }
-  const text = visualizeGrid(grid.bounds, (x, y) => {
-    return String(grid.get(x, y) ?? '.');
-  });
   
-  const items = Array.from(grid.entries()).filter(([pos, value]) => value >= 2);
-  return items.length;
+  return Array.from(grid.values()).filter(value => value >= 2).length;
 }
 
 export function part2(input) {
@@ -63,11 +59,5 @@ export function part2(input) {
     }
   }
   
-  const text = visualizeGrid(grid.bounds, (x, y) => {
-    return String(grid.get(x, y) ?? '.');
-  });
-  // console.log(text);
-
-  const items = Array.from(grid.entries()).filter(([pos, value]) => value >= 2);
-  return items.length;
+  return Array.from(grid.values()).filter(value => value >= 2).length;
 }    
