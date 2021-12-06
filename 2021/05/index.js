@@ -1,5 +1,5 @@
 
-import { byLine, createGridMap, time, visualizeGrid } from "../../utils";
+import { byLine, createGridMap} from "../../utils";
 
 export const parse = byLine(line => {
   const re = /([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)/;
@@ -52,7 +52,7 @@ export function part2(input) {
     const steps = Math.max(
       (Math.abs(from.x - to.x)) + 1,
       (Math.abs(from.y - to.y)) + 1,
-    );      
+    );
     for(let i = 0; i < steps; i++) {
       const [x,y] = [from.x + i * stepX, from.y + i * stepY];
       grid.set(x,y, grid.get(x, y) + 1);

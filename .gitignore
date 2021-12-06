@@ -1,6 +1,7 @@
 ./.vscode
 node_modules
 .env
+scratch.js
 
 .DS_Store
 yarn-error.log
