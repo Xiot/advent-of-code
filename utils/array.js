@@ -15,6 +15,6 @@ export function permutations(values) {
   return items;
 }
 
-export const maxOf = (arr, accessor) => accessor(maxBy(arr, accessor));
-export const minOf = (arr, accessor) => accessor(minBy(arr, accessor));
+export const maxOf = (arr, accessor = x => x) => accessor(maxBy(arr, accessor));
+export const minOf = (arr, accessor = x => x) => accessor(minBy(arr, accessor));
 export const sumOf = (arr, accessor = x => x) => arr.reduce((sum, value) => sum + accessor(value), 0);
