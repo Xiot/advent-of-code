@@ -1,4 +1,5 @@
 export * from './assert';
+export * from './array';
 export * from './fs';
 export * from './strings';
 export * from './time';

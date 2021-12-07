@@ -1,4 +1,4 @@
-import {minBy, maxBy} from 'lodash';
+import {minOf, maxOf} from './array';
 
 export function* pointsWithin(item) {
   for(let z = item.zMin; z <= item.zMax; z++) {
@@ -25,9 +25,6 @@ export function visualizeGrid(gridOrBounds, render) {
   return lines.join('\n');
 }
 
-export const maxOf = (arr, accessor) => accessor(maxBy(arr, accessor));
-export const minOf = (arr, accessor) => accessor(minBy(arr, accessor));
-
 export function boundsOfGrid(grid) {
   return {
     left: 0,
@@ -38,6 +35,7 @@ export function boundsOfGrid(grid) {
     height: grid.length
   };
 }
+
 export function findBounds(input, accessX = p => p[0], accessY = p => p[1]) {
   return {
     left: minOf(input, accessX),

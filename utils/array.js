@@ -1,14 +1,20 @@
-export function permutations(values) {
-    if (values.length === 0) { return [[]]; }
-    if (values.length === 1) { return [[...values]]; }
+import {minBy, maxBy} from 'lodash';
 
-    const items = [];
-    for(let i = 0; i < values.length; i++) {
-        const item = values[i];
-        const others = values.slice(0, i).concat(values.slice(i+1));
-        for(let p of permutations(others)) {
-            items.push([item, ...p]);
-        }
+export function permutations(values) {
+  if (values.length === 0) { return [[]]; }
+  if (values.length === 1) { return [[...values]]; }
+
+  const items = [];
+  for(let i = 0; i < values.length; i++) {
+    const item = values[i];
+    const others = values.slice(0, i).concat(values.slice(i+1));
+    for(let p of permutations(others)) {
+      items.push([item, ...p]);
     }
-    return items;
+  }
+  return items;
 }
+
+export const maxOf = (arr, accessor) => accessor(maxBy(arr, accessor));
+export const minOf = (arr, accessor) => accessor(minBy(arr, accessor));
+export const sumOf = (arr, accessor = x => x) => arr.reduce((sum, value) => sum + accessor(value), 0);
