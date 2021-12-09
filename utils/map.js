@@ -57,6 +57,11 @@ export function createBounds(initialBounds) {
         );
       }
       return this;
+    },
+    contains(x, y, z = 0) {
+      return this.left <= x && x <= this.right 
+        && this.top <= y && y <= this.bottom
+        && this.zMin <= z && z <= this.zMax;
     }
   };
 }
