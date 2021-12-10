@@ -27,6 +27,7 @@ module.exports = {
 
       const child = fork('./scripts/launch.js', [year, day, part, inputName], {
         stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+        env: {...process.env, DEBUG: debug ? '1' : '0'}
       });
 
       child.on('spawn', () => {
@@ -76,6 +77,7 @@ module.exports = {
       if (key === 's') {
         inputName = 'sample.txt';
       } else if (key === 'i') {
+        debug = false;
         inputName = 'input.txt';
       } else if (key === '1') {
         part = 1;
@@ -84,7 +86,7 @@ module.exports = {
         part = 2;
         inputName = 'sample.txt';
       } else if (key === 'd') {
-        debug = !debug;      
+        debug = !debug;
       } else {
         continue;
       }

@@ -22,12 +22,12 @@ export const initialize = (year, day) => {
 
 function createTemplate() {
   return trimLeading(`
-    import { autoParse } from "../../utils";
+    import { autoParse, log } from "../../utils";
     
     export const parse = autoParse();
 
     export function part1(input) {
-    
+      log('input', input);
     }
     
     export function part2(input) {
