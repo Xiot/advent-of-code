@@ -62,6 +62,11 @@ export function createBounds(initialBounds) {
       return this.left <= x && x <= this.right 
         && this.top <= y && y <= this.bottom
         && this.zMin <= z && z <= this.zMax;
+    },
+    get length() {
+      return (this.right - this.left + 1) *
+      (this.bottom - this.top +1) *
+      (this.zMax - this.zMin + 1);
     }
   };
 }
@@ -83,7 +88,10 @@ export function createGridMap(defaultValue) {
   
   const bounds = createBounds();
 
+  let markOnGet = true;
   return {
+    get markOnGet() { return markOnGet;},
+    set markOnGet(value) { markOnGet = value; },
     clone() {
       const clone = createGridMap(defaultValue);
       Array.from(this.entries()).forEach(([{x, y}, value]) => clone.set(x, y, value));
@@ -95,10 +103,10 @@ export function createGridMap(defaultValue) {
     },
     get(x, y) {
       assertPosition(x, y);
-      bounds.mark(x, y);
+      markOnGet && bounds.mark(x, y);
 
       let value = cache.get(keyOf(x, y));
-      if (value) { return value; }
+      if (value != null) { return value; }
       if (defaultValue === undefined) {
         return undefined;
       }
@@ -117,9 +125,20 @@ export function createGridMap(defaultValue) {
         : value;
 
       cache.set(keyOf(x, y), valueToSet);
+      return valueToSet;
     },
     get bounds() {
       return bounds;
+    },
+    ring: function*(cx, cy) {
+      for(let x = cx-1; x <= cx+1; x++) {
+        for(let y = cy-1; y <= cy+1; y++) {
+          if (x === cx && y === cy) continue;
+          if(bounds.contains(x, y)) {
+            yield [{x, y}, this.get(x, y)];
+          }
+        }
+      }
     },
     values() {
       return cache.values();

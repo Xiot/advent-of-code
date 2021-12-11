@@ -1,9 +1,10 @@
 import {minOf, maxOf} from './array';
 
-export function* pointsWithin(item) {
-  for(let z = item.zMin; z <= item.zMax; z++) {
-    for(let y = item.top; y <= item.bottom; y++) {
-      for(let x = item.left; x <= item.right; x++) {
+export function* pointsWithin(gridOrBounds) {
+  const bounds = gridOrBounds.bounds || gridOrBounds;
+  for(let z = bounds.zMin; z <= bounds.zMax; z++) {
+    for(let y = bounds.top; y <= bounds.bottom; y++) {
+      for(let x = bounds.left; x <= bounds.right; x++) {
         yield [x, y, z];
       }
     }

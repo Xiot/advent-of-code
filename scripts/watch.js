@@ -45,12 +45,15 @@ module.exports = {
 
       child.stderr.on('data', data => process.stderr.write(data));
       child.on('close', (code, signal) => {
-        if (signal === 'SIGTERM') {         
+        if (signal === 'SIGTERM') {
+          console.log('broken');
           return;
         }
         hasOutput && console.log('='.repeat(30));
         if (questionResult) {
           console.log(`${formatDuration(questionResult.duration)} Part ${'I'.repeat(part)}: ${questionResult.result}`);
+        } else {
+          console.log('no output');
         }
       });
       currentChild = child;
