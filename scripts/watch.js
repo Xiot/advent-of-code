@@ -38,7 +38,8 @@ module.exports = {
         questionResult = result;
       });
 
-      debug && child.stdout.on('data', data => {
+      child.stdout.on('data', data => {
+        if (!debug) return;
         hasOutput = true;
         process.stdout.write(data);
       });
@@ -46,7 +47,7 @@ module.exports = {
       child.stderr.on('data', data => process.stderr.write(data));
       child.on('close', (code, signal) => {
         if (signal === 'SIGTERM') {
-          console.log('broken');
+          console.log('SIGTERM');
           return;
         }
         hasOutput && console.log('='.repeat(30));
