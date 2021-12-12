@@ -3,7 +3,13 @@ export function createLog(opts = {enable: defaultLogging}) {
 
   let depth = 0;
   const indent =  () =>' '.repeat(depth * 2);
-  const log = (...args) => opts?.enable && console.log(indent(), ...args);
+  const log = (...args) => {
+    if (!opts?.enable) return;
+    
+    // NOTE: when depth > 0 and multiple lines are writen, only the first line will be intented
+    process.stdout.write(indent());
+    console.log(...args);
+  };
 
   return Object.assign(log, 
     {
@@ -18,10 +24,10 @@ export function createLog(opts = {enable: defaultLogging}) {
       pop(...args) {
         depth --;
         // console.groupEnd();
-        log(...args);
-        args.length > 0 && console.log(...args);
+        // args.length > 0 && console.log(...args);
+        args.length > 0 && log(...args);        
       },
-      log: log, //console.log.bind(console)
+      log, //console.log.bind(console)
     }
   );
 };

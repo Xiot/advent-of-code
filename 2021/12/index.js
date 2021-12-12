@@ -1,32 +1,26 @@
 
-import { autoParse, log , byLine} from "../../utils";
+import { log } from "../../utils";
 
-export const parse = byLine(line => {
-  const [,start, end] = /(.+)-(.+)/.exec(line);
-  return {start,end};
-});
-
-export function part1(input) {
-  
-  const buildGraph = edges => {
-    
-    const nodes = {};
-    for(let edge of edges) {
-      const node = nodes[edge.start] || (nodes[edge.start] = {name: edge.start, connected: []});
-      const target = nodes[edge.end] || (nodes[edge.end] = {name: edge.end, connected: []});
-      if (node.name !== 'start') {
-        target.connected.push(node);
-      }
-      if (target.name !== 'start') {
-        node.connected.push(target);
-      }
+export const parse = text => text.split('\n')
+  .map(line =>{
+    const [,start, end] = /(.+)-(.+)/.exec(line);
+    return {start,end};
+  } )
+  .reduce((nodes, edge) => {
+    const node = nodes[edge.start] || (nodes[edge.start] = {name: edge.start, connected: []});
+    const target = nodes[edge.end] || (nodes[edge.end] = {name: edge.end, connected: []});
+    if (node.name !== 'start') {
+      target.connected.push(node);
     }
+    if (target.name !== 'start') {
+      node.connected.push(target);
+    }
+
     return nodes;
-  };
+  }, {});
 
-  const network = buildGraph(input);
+export function part1(network) {
   
-
   const paths = [];
   const stack = [];
   
@@ -44,7 +38,7 @@ export function part1(input) {
       }
     }
   }
-  console.log(paths.map(p => p.map(q => q.name).join(' -> ')).join('\n'));
+  log(paths.map(p => p.map(q => q.name).join(' -> ')).join('\n'));
   return paths.length;
 }
 
@@ -55,26 +49,7 @@ function isSmallCave(name) {
   return name === name.toLowerCase();
 }
 
-export function part2(input) {
-
-  const buildGraph = edges => {
-    
-    const nodes = {};
-    for(let edge of edges) {
-      const node = nodes[edge.start] || (nodes[edge.start] = {name: edge.start, connected: []});
-      const target = nodes[edge.end] || (nodes[edge.end] = {name: edge.end, connected: []});
-      if (node.name !== 'start') {
-        target.connected.push(node);
-      }
-      if (target.name !== 'start') {
-        node.connected.push(target);
-      }
-    }
-    return nodes;
-  };
-
-  const network = buildGraph(input);
-  
+export function part2(network) {
 
   const paths = [];
   const stack = [];
@@ -103,6 +78,7 @@ export function part2(input) {
       }
     }
   }
-  console.log(paths.map(p => p.map(q => q.name).join(' -> ')).join('\n'));
+  log(paths.map(p => p.map(q => q.name).join(' -> ')).join('\n'));
+  
   return paths.length;
 }    
