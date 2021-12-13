@@ -7,12 +7,12 @@ function assertPosition(x, y) {
 
 export function extendBounds(b, left, top, right, bottom, zMin, zMax) {
   return createBounds({
-    left:         b.left + left,
-    top: b.top + top,
-    right: b.right + right,
+    left:   b.left + left,
+    top:    b.top + top,
+    right:  b.right + right,
     bottom: b.bottom + bottom,
-    zMin: b.zMin + (zMin ?? 0),
-    zMax: b.zMax + (zMax ?? 0)
+    zMin:   b.zMin + (zMin ?? 0),
+    zMax:   b.zMax + (zMax ?? 0)
   });
 }
 
@@ -124,7 +124,11 @@ export function createGridMap(defaultValue) {
         ? value(this.get(x, y))
         : value;
 
-      cache.set(keyOf(x, y), valueToSet);
+      if (valueToSet === undefined) {
+        cache.delete(keyOf(x, y));
+      } else {
+        cache.set(keyOf(x, y), valueToSet);
+      }
       return valueToSet;
     },
     get bounds() {

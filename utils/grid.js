@@ -14,11 +14,11 @@ export function* pointsWithin(gridOrBounds) {
 export function visualizeGrid(gridOrBounds, render) {
   const lines = [];
   // Allow the caller to pass a grid or bounds
-  const bounds = gridOrBounds.bounds || gridOrBounds;
+  const {left = 0, top = 0, bottom, right} = gridOrBounds.bounds || gridOrBounds;
 
-  for(let y = bounds.top; y <= bounds.bottom; y++) {
+  for(let y = top; y <= bottom; y++) {
     let line = '';
-    for(let x = bounds.left; x <= bounds.right; x++) {
+    for(let x = left; x <= right; x++) {
       line += render(x, y);
     }
     lines.push(line);
