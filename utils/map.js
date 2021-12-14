@@ -1,3 +1,4 @@
+import { maxOf, minOf } from "./array";
 
 function assertPosition(x, y) {
   if ((typeof x !== 'number') || (typeof y !== 'number')) {
@@ -116,6 +117,9 @@ export function createGridMap(defaultValue) {
 
       return value;
     },
+    unset(x, y) {
+      cache.delete(keyOf(x,y));
+    },
     set(x, y, value) {
       assertPosition(x, y);
       bounds.mark(x, y);
@@ -133,6 +137,16 @@ export function createGridMap(defaultValue) {
     },
     get bounds() {
       return bounds;
+    },
+    recalculateBounds() {
+      const keys = Array.from(this.keys());
+      this.bounds = createBounds({
+        left: minOf(keys, k => k.x),
+        right: maxOf(keys, k => k.x),
+        top: minOf(keys, k => k.y),
+        bottom: maxOf(keys, k => k.y)
+      });
+      return this.bounds;
     },
     ring: function*(cx, cy) {
       for(let x = cx-1; x <= cx+1; x++) {
