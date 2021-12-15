@@ -68,7 +68,7 @@ module.exports = {
     
     watcher.on('change', debounce(() => {
       launch(year, day, part, inputName);
-    }, 2000, {leading: true, trailing: false}));
+    }, 1000, {leading: false, trailing: true}));
 
     launch(year, day, part, inputName);
 
