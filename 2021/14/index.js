@@ -1,6 +1,7 @@
 
 import { autoParse, log, sumOf, range } from "../../utils";
 import fs from 'fs';
+import { info } from "console";
 
 export const parse = text => {
   const sections = text.split('\n\n');
@@ -122,6 +123,71 @@ function calculate(pair, MAX_DEPTH, rules, stream) {
   //   final: code,
   //   counts,
   // };
+}
+
+function pairsOf(template) {
+  const pairs = [];
+  for(let i = 0; i < template.length - 1; i++) {
+    const pair = template.slice(i, i +2);
+    pairs.push(pair);
+  }
+  return pairs;
+}
+export function part3_lightbulb(input) {
+
+  let {template, rules} = input;
+  const totals = {};
+  const STEPS = 40;
+
+  // template = 'NN';
+
+  const ruleCount = Object.entries(rules).reduce((acc, [pair, insert]) => {
+    acc[insert] = (acc[insert] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const w = Object.entries(ruleCount).sort((l, r) => l[1] - r[1]);
+  const leastUsed = w[0][0];
+  const mostUsed = w[w.length - 1][0];
+  log('least', w[0][0]);
+  log('most ', w[w.length - 1][0]);
+
+  for(let i = 0; i < template.length - 1; i++) {
+    const pair = template.slice(i, i +2);
+    totals[pair] = (totals[pair] ?? 0) + 1;
+  }
+
+  const inc = (obj, key, amount = 1) => {
+    obj[key] = (obj[key] ?? 0) + amount;
+    return obj;
+  };
+
+  const letterCount = template.split('').reduce((acc, c) => {
+    return inc(acc, c);
+  }, {});
+
+  log('step', 0, totals);
+  const newPairs = [totals];
+  for(let step = 1; step <= STEPS; step++) {
+    const prevPairs = newPairs[step - 1];
+    newPairs[step] = {};
+
+    for(let [pair, count] of Object.entries(prevPairs)) {
+      const insert = rules[pair];
+      const left = pair[0] + insert;
+      const right = insert + pair[1];  
+      inc(newPairs[step], left, count);
+      inc(newPairs[step], right, count);
+      inc(letterCount, insert, count);
+    }
+    
+    log('step', step, letterCount);
+  }
+
+  log(letterCount);
+  return letterCount[mostUsed] - letterCount[leastUsed];
+
+  // return JSON.stringify(totals);
 }
 
 export async function part3(input) {
@@ -386,210 +452,211 @@ export async function part3(input) {
 }
 
 export function part2(input) {
+  return part3_lightbulb(input);
 
-  const {template, rules} = input;
-  // const {rules} = input;
-  // const template = 'NN';
-  // const counts = {};
+  // const {template, rules} = input;
+  // // const {rules} = input;
+  // // const template = 'NN';
+  // // const counts = {};
 
-  const ruleCount = Object.entries(rules).reduce((acc, [pair, insert]) => {
-    acc[insert] = (acc[insert] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const w = Object.entries(ruleCount).sort((l, r) => l[1] - r[1]);
-  const leastUsed = w[0][0];
-  const mostUsed = w[w.length - 1][0];
-  log('least', w[0][0]);
-  log('most ', w[w.length - 1][0]);
-
-  log(Object.entries(rules).sort((l, r) => l[0].localeCompare(r[0])));
-
-  let sumMost = 0;
-  let sumLeast = 0;
-  let code = template;
-
-
-  const refCount = 'NBCCNBBBCBHCB'.split('').reduce((acc, c) => {
-    acc[c] = (acc[c] ?? 0) +1 ;
-    return acc;
-  },{});
-  log('ref', 2, refCount);
-
-  // const counts = template.split('').reduce((acc, c) => {
-  //   acc[c] = (acc[c] ?? 0) + 1;
+  // const ruleCount = Object.entries(rules).reduce((acc, [pair, insert]) => {
+  //   acc[insert] = (acc[insert] ?? 0) + 1;
   //   return acc;
   // }, {});
-  const counts = {};
+
+  // const w = Object.entries(ruleCount).sort((l, r) => l[1] - r[1]);
+  // const leastUsed = w[0][0];
+  // const mostUsed = w[w.length - 1][0];
+  // log('least', w[0][0]);
+  // log('most ', w[w.length - 1][0]);
+
+  // log(Object.entries(rules).sort((l, r) => l[0].localeCompare(r[0])));
+
+  // let sumMost = 0;
+  // let sumLeast = 0;
+  // let code = template;
+
+
+  // const refCount = 'NBCCNBBBCBHCB'.split('').reduce((acc, c) => {
+  //   acc[c] = (acc[c] ?? 0) +1 ;
+  //   return acc;
+  // },{});
+  // log('ref', 2, refCount);
+
+  // // const counts = template.split('').reduce((acc, c) => {
+  // //   acc[c] = (acc[c] ?? 0) + 1;
+  // //   return acc;
+  // // }, {});
+  // const counts = {};
   
-  let stack = [];
-  for(let i = 0; i < code.length - 1; i++) {
-    const pair = code.slice(i, i +2);
-    stack.push({pair, path: [pair], depth: 0});
-    // const insert = rules[pair];
-    // counts[insert] = (counts[insert] ?? 0) + 1;     
-  }
-
-  const cache = {};
-  const MAX_DEPTH = 10;  
-
-  const mergeCounts = (left = {}, right = {}) => {
-    return Object.values(rules).reduce((acc, key) => {
-      const ret = (left[key] ?? 0) + (right[key] ?? 0);
-      if (ret) {
-        acc[key] = ret;
-      }
-      return acc;
-    }, {});
-  };
-
-  let bottom = '';
-  let b = 0;
-  let lastDepth = 0;
-  while(stack.length > 0) {
-    // log(stack.length);
-    const {pair, path, w, depth} = stack.pop();
-    const insert = rules[pair];
-    // log(depth);
-    if (depth > lastDepth) {
-      lastDepth = depth;
-      // log('depth', depth);
-      // log('depth', depth, lastDepth);
-    }
-    
-    const rem = MAX_DEPTH - depth;
-    // log(':', depth, pair, rules[pair], rem,  path);
-    if (depth >= MAX_DEPTH) {
-
-      // let local = {};
-      // for(let i = path.length - 2; i >= 0; i--) {
-      //   const localPair = path[i];
-      //   cache[localPair] = (cache[localPair] ?? []);
-      //   local = mergeCounts(local, {[rules[localPair]]: 1});
-      //   log(i, localPair, local);
-
-      //   const d = depth - i;
-      //   const idx = i+1;
-      //   cache[localPair][idx] = mergeCounts(cache?.[localPair]?.[idx], local);
-      //   log('c', depth, cache[localPair][idx]);
-      // }
-      // log('==',pair, path[0], cache[path[0]], path);
-      counts[pair[0]] = (counts[pair[0]] ?? 0) + 1;
-      // counts[pair[1]] = (counts[pair[1]] ?? 0) + 1;
-      b += 1;
-      if (b % 100000 === 0) {
-        log(b);
-      }
-      
-      // bottom += pair + '-';
-      continue;
-    }
-    
-
-    // counts[insert] = (counts[insert] ?? 0) + 1;
-
-    const left = pair[0] + insert;
-    const right = insert + pair[1];
-
-    if (!cache?.[pair]?.[MAX_DEPTH - depth]) {
-      
-      stack.push({
-        pair: insert + pair[1], 
-        path: [...path, right],
-        depth: depth + 1,
-        // w: mergeCounts(w, {[insert]: 1})
-      });
-      
-      stack.push({
-        pair: pair[0] + insert, 
-        path: [...path, left],
-        depth: depth + 1, 
-        // w: mergeCounts(w, {[insert]: 1})
-      });
-    }
-    // lastDepth = depth;
-  }
-  counts[template[template.length - 1]] = (counts[template[template.length - 1]] ?? 0) + 1;
-  console.log();
-  console.log(cache);
-  console.log(bottom);
-  console.log();
-  
-  let mergeSum = {};
-  for(let i = 0; i < code.length - 1; i++) {
-    const pair = code.slice(i, i +2);
-    log('ms', pair, cache[pair]);
-    // mergeSum = mergeCounts(mergeSum, cache[pair][MAX_DEPTH]);
-    // recurse(pair);
-    // stack.push({pair, depth: 1});
-    // const insert = rules[pair];
-    // counts[insert] = (counts[insert] ?? 0) + 1;     
-  }
-  log('mergeSum', mergeSum);
-
-  // const recurse = (pair, counts, remaining)  => {
-  //   if (remaining === 0) return counts;
-
-  //   if (cache?.[pair]?.[remaining]) {
-  //     return cache[pair][remaining];
-  //   }
-  //   const insert = rules[pair];
-  //   const left = recurse(pair[0] + insert, counts, remaining - 1);
-  //   const right = recurse(insert + pair[1], counts, remaining - 1);
-  //   return mergeCounts({
-  //     [pair[0]]: 1, 
-  //     [pair[1]]: 1
-  //   }, mergeCounts(left, right));
-  // };
-
-  
+  // let stack = [];
   // for(let i = 0; i < code.length - 1; i++) {
   //   const pair = code.slice(i, i +2);
-  //   recurse(pair);
-  //   // stack.push({pair, depth: 1});
+  //   stack.push({pair, path: [pair], depth: 0});
   //   // const insert = rules[pair];
   //   // counts[insert] = (counts[insert] ?? 0) + 1;     
   // }
 
-  log(counts);
-  log(mostUsed, counts[mostUsed]);
-  log(leastUsed, counts[leastUsed]);
-  const diff = counts[mostUsed] - counts[leastUsed];
+  // const cache = {};
+  // const MAX_DEPTH = 10;  
 
-  log(sumOf(Object.values(counts)));
+  // const mergeCounts = (left = {}, right = {}) => {
+  //   return Object.values(rules).reduce((acc, key) => {
+  //     const ret = (left[key] ?? 0) + (right[key] ?? 0);
+  //     if (ret) {
+  //       acc[key] = ret;
+  //     }
+  //     return acc;
+  //   }, {});
+  // };
 
-  return diff;
-
-  
-
-  // let code = template;
-
-  // let list = template.split('').map(x => ({c: x, next: null}));
-  // list.forEach((n, i) => n.next = list[i+1]);
-  
-  // const counts = template.split('').reduce((acc, c) => {
-  //   acc[c] = (acc[c] ?? 0) + 1;
-  //   return acc;
-  // }, {});
-
-  // let head = list[0];
-  // for(let step = 0; step < 10; step++) {  
-  //   log(step);
-  //   let node = list[0];
-  //   while(node.next != null) {
-  //     const pair = node.c + node.next.c;
-  //     const rule = rules.find(x => x.from === pair);
-  //     counts[rule.to] = (counts[rule.to] ?? 0) + 1;
-  //     const n = node.next;
-  //     const newNode = {c: rule.to, next: node.next};
-  //     node.next = newNode;
-  //     node = n;
+  // let bottom = '';
+  // let b = 0;
+  // let lastDepth = 0;
+  // while(stack.length > 0) {
+  //   // log(stack.length);
+  //   const {pair, path, w, depth} = stack.pop();
+  //   const insert = rules[pair];
+  //   // log(depth);
+  //   if (depth > lastDepth) {
+  //     lastDepth = depth;
+  //     // log('depth', depth);
+  //     // log('depth', depth, lastDepth);
   //   }
-  // }
+    
+  //   const rem = MAX_DEPTH - depth;
+  //   // log(':', depth, pair, rules[pair], rem,  path);
+  //   if (depth >= MAX_DEPTH) {
 
-  // console.log(counts);
-  // const k = Array.from(Object.entries(counts)).sort((l, r) => l[1] - r[1]);
-  // const min = k[0][1];
-  // const max = k[k.length - 1][1];
-  // return max - min;
+  //     // let local = {};
+  //     // for(let i = path.length - 2; i >= 0; i--) {
+  //     //   const localPair = path[i];
+  //     //   cache[localPair] = (cache[localPair] ?? []);
+  //     //   local = mergeCounts(local, {[rules[localPair]]: 1});
+  //     //   log(i, localPair, local);
+
+  //     //   const d = depth - i;
+  //     //   const idx = i+1;
+  //     //   cache[localPair][idx] = mergeCounts(cache?.[localPair]?.[idx], local);
+  //     //   log('c', depth, cache[localPair][idx]);
+  //     // }
+  //     // log('==',pair, path[0], cache[path[0]], path);
+  //     counts[pair[0]] = (counts[pair[0]] ?? 0) + 1;
+  //     // counts[pair[1]] = (counts[pair[1]] ?? 0) + 1;
+  //     b += 1;
+  //     if (b % 100000 === 0) {
+  //       log(b);
+  //     }
+      
+  //     // bottom += pair + '-';
+  //     continue;
+  //   }
+    
+
+  //   // counts[insert] = (counts[insert] ?? 0) + 1;
+
+  //   const left = pair[0] + insert;
+  //   const right = insert + pair[1];
+
+  //   if (!cache?.[pair]?.[MAX_DEPTH - depth]) {
+      
+  //     stack.push({
+  //       pair: insert + pair[1], 
+  //       path: [...path, right],
+  //       depth: depth + 1,
+  //       // w: mergeCounts(w, {[insert]: 1})
+  //     });
+      
+  //     stack.push({
+  //       pair: pair[0] + insert, 
+  //       path: [...path, left],
+  //       depth: depth + 1, 
+  //       // w: mergeCounts(w, {[insert]: 1})
+  //     });
+  //   }
+  //   // lastDepth = depth;
+  // }
+  // counts[template[template.length - 1]] = (counts[template[template.length - 1]] ?? 0) + 1;
+  // console.log();
+  // console.log(cache);
+  // console.log(bottom);
+  // console.log();
+  
+  // let mergeSum = {};
+  // for(let i = 0; i < code.length - 1; i++) {
+  //   const pair = code.slice(i, i +2);
+  //   log('ms', pair, cache[pair]);
+  //   // mergeSum = mergeCounts(mergeSum, cache[pair][MAX_DEPTH]);
+  //   // recurse(pair);
+  //   // stack.push({pair, depth: 1});
+  //   // const insert = rules[pair];
+  //   // counts[insert] = (counts[insert] ?? 0) + 1;     
+  // }
+  // log('mergeSum', mergeSum);
+
+  // // const recurse = (pair, counts, remaining)  => {
+  // //   if (remaining === 0) return counts;
+
+  // //   if (cache?.[pair]?.[remaining]) {
+  // //     return cache[pair][remaining];
+  // //   }
+  // //   const insert = rules[pair];
+  // //   const left = recurse(pair[0] + insert, counts, remaining - 1);
+  // //   const right = recurse(insert + pair[1], counts, remaining - 1);
+  // //   return mergeCounts({
+  // //     [pair[0]]: 1, 
+  // //     [pair[1]]: 1
+  // //   }, mergeCounts(left, right));
+  // // };
+
+  
+  // // for(let i = 0; i < code.length - 1; i++) {
+  // //   const pair = code.slice(i, i +2);
+  // //   recurse(pair);
+  // //   // stack.push({pair, depth: 1});
+  // //   // const insert = rules[pair];
+  // //   // counts[insert] = (counts[insert] ?? 0) + 1;     
+  // // }
+
+  // log(counts);
+  // log(mostUsed, counts[mostUsed]);
+  // log(leastUsed, counts[leastUsed]);
+  // const diff = counts[mostUsed] - counts[leastUsed];
+
+  // log(sumOf(Object.values(counts)));
+
+  // return diff;
+
+  
+
+  // // let code = template;
+// 
+  // // let list = template.split('').map(x => ({c: x, next: null}));
+  // // list.forEach((n, i) => n.next = list[i+1]);
+  // 
+  // // const counts = template.split('').reduce((acc, c) => {
+  // //   acc[c] = (acc[c] ?? 0) + 1;
+  // //   return acc;
+  // // }, {});
+// 
+  // // let head = list[0];
+  // // for(let step = 0; step < 10; step++) {  
+  // //   log(step);
+  // //   let node = list[0];
+  // //   while(node.next != null) {
+  // //     const pair = node.c + node.next.c;
+  // //     const rule = rules.find(x => x.from === pair);
+  // //     counts[rule.to] = (counts[rule.to] ?? 0) + 1;
+  // //     const n = node.next;
+  // //     const newNode = {c: rule.to, next: node.next};
+  // //     node.next = newNode;
+  // //     node = n;
+  // //   }
+  // // }
+// 
+  // // console.log(counts);
+  // // const k = Array.from(Object.entries(counts)).sort((l, r) => l[1] - r[1]);
+  // // const min = k[0][1];
+  // // const max = k[k.length - 1][1];
+  // // return max - min;
 }    
