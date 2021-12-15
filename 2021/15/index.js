@@ -1,5 +1,5 @@
 
-import { autoParse, log, byLine, loadGrid, visualizeGrid, createGridMap } from "../../utils";
+import { autoParse, log, byLine, loadGrid, visualizeGrid, createGridMap, pointsWithin, dijkstra } from "../../utils";
 import Color from 'colors/safe';
 
 export const parse = byLine(line => line.split('').map(x => parseInt(x)));
@@ -18,110 +18,69 @@ const colors = [
 ];
 
 export function part1(input) {
-  return part1_attempt2(input);
+  return part1_dijkstra(input);
 
 }
 
 export function part2(input) {
+  const originalGrid = loadGrid(input);
+  const largeGrid = originalGrid.clone();
 
-}    
+  const tileWidth = originalGrid.bounds.width;
+  const tileHeight = originalGrid.bounds.height;
+  for(let ty = 0; ty < 5; ty++) {
+    for(let tx = 0; tx < 5; tx++) {
+      if (tx === 0 && ty === 0) continue;
+      for(let y = 0; y < tileHeight; y++) {
+        for(let x = 0; x < tileWidth; x++) {
 
-function part1_attempt2(input) {
+          const nextValue = (originalGrid.get(x, y) + tx + ty);
+          const newValue = nextValue > 9 ? nextValue - 9 : nextValue;          
 
-  const grid = loadGrid(input);
-  const paths= [];
-  
-  const keyOf = (x, y) => `${x},${y}`;
-
-  const stack = [];
-  stack.push([
-    {x: 0, y: 0},
-    {'0,0':true},
-    [],
-    0    
-  ]);
-
-
-  const visited1 = {};
-  let lowest = Number.MAX_SAFE_INTEGER;
-  while(stack.length > 0) {    
-
-    const [{x, y}, visited, path, cost] = stack.pop();
-
-    // if (visited[keyOf(x, y)]) continue;
-    // visited[keyOf(x, y)] = true;
-    // log(cost);
-    // log(visualizeGrid(grid, (x, y) => visited[keyOf(x, y)] ? 'x' : grid.get(x, y)) + '\n');
-
-    const neighbors = (x, y) => {
-
-      const getInfo = (x, y) => {
-        if (!grid.bounds.contains(x, y) || visited[keyOf(x, y)]) return null;              
-        // log('c', cost, grid.get(x, y));
-        return [
-          {x, y}, 
-          {...visited, [keyOf(x, y)]: true}, 
-          [...path, {x,y}], 
-          cost + grid.get(x, y),
-          grid.get(x, y)
-        ];        
-      };
-      return [
-        getInfo(x-1,y), 
-        getInfo(x+1,y), 
-        getInfo(x, y-1), 
-        getInfo(x,y+1)
-      ].filter(Boolean).sort((l, r) => l[4] - r[4]);
-    };
-
-    if (x === grid.bounds.right && y === grid.bounds.bottom) {
-      // log('found path', cost);
-      if (cost < lowest) {
-        log('new low', cost);
-        log(visualizeGrid(grid, (x, y) => visited[keyOf(x, y)] ? 'x' : grid.get(x, y)));
-        log();
-        lowest = cost;
+          if (x === 4 && y === 0 && ty === 0) {
+            log(' ',tx, nextValue, newValue);
+          }
+          largeGrid.set(
+            x + tx * tileWidth, 
+            y + ty * tileHeight,
+            newValue);
+        }
       }
-      paths.push(cost);
-      continue;
     }
-
-    const n = neighbors(x, y);
-    // log(n);
-    if (x === 0 && y === 0) {
-      console.log(n);
-    }
-    // if (n.length > 0) {
-    //   stack.push(n[0]);
-    // }
-    n.reverse().forEach(info => {
-      stack.push(info);
-    });
   }
 
-  // log(paths.sort((l, r) => l - r));
-  // const lowest1 = paths.sort((l, r) => l - r);
-  return lowest;
+  const lowest = dijkstra(largeGrid, {x: 0, y: 0}, {x: largeGrid.bounds.right, y: largeGrid.bounds.bottom});
+
+  log(visualizeGrid(largeGrid, (x, y) => {
+    const f = lowest.path.find(p => p.x === x && p.y === y);
+    const colorFn = colors[largeGrid.get(x, y)];
+    return colorFn( f ? '#' : '.');    
+  }));
+
+  return lowest.cost;  
+}    
+
+function part1_dijkstra(input) {
+  const grid = loadGrid(input);
+  const lowest = dijkstra(grid, {x:0, y:0}, {x: input[0].length-1, y: input.length-1});
+
+  log(visualizeGrid(grid, (x, y) => {
+    const f = lowest.path.find(p => p.x === x && p.y === y);
+    const colorFn = colors[grid.get(x, y)];
+    return colorFn( f ? '#' : '.');    
+  }));
+
+  return lowest.cost;
 }
 
-function part1_attempt1(input) {
+function part1_cost_map(input) {
 
-  // const r = minPath(input, input[0].length - 1, input.length - 1);
-  // // log('r', r);
-  // return r[r.length -1][r[0].length - 1];
-
-
-  // log('input', input);
   const grid = loadGrid(input);
   const info = createGridMap(() => ({cost: 999, path: []}));
-  
-  // const w = astar(grid, )
 
   const keyOf = (x, y) => `${x},${y}`;
   const stack = [];
   stack.push([{x:0, y: 0}, {[keyOf(0,0)]: true}, [], 0]);
-
-  const paths = [];
 
   log(visualizeGrid(grid, (x,y) => grid.get(x,y)));
   log();
@@ -184,45 +143,69 @@ function part1_attempt1(input) {
   return lowest.cost;
 }
 
+function part1_attempt2(input) {
 
-// ----------------------------------------------------
-const minPath = (grid, x, y) => {
+  const grid = loadGrid(input);
+  const paths= [];
+  
+  const keyOf = (x, y) => `${x},${y}`;
 
-  function makeArray(width, height) {
-    let outputArray = new Array(height);
-    let row         = new Array(width);
-    for(let iy = 0; iy < height; iy++) {
-      outputArray[iy] = row.slice();
-    }
-    return outputArray;
-  }
+  const stack = [];
+  stack.push([
+    {x: 0, y: 0},
+    {'0,0':true},
+    [],
+    0    
+  ]);
 
-  function initArrayBorders(outputArray, grid, width, height)  {
-    outputArray[0][0] = 0; //grid[0][0];
-    for (let ix = 1; ix < width; ix++) {
-      outputArray[ix][0] = outputArray[ix-1][0] + grid[ix][0];
-    }  
-    for (let iy = 1; iy < height; iy++) {
-      outputArray[0][iy] = outputArray[0][iy-1] + grid[0][iy];
-    }  
-  }
+  let lowest = Number.MAX_SAFE_INTEGER;
+  while(stack.length > 0) {    
 
-  function fillArray(outputArray, grid, width, height) {
-    for (let ix = 1; ix < width; ix++) {
-      for (let iy = 1; iy < height; iy++) {
-        let minWeight = Math.min(outputArray[ix-1][iy], 
-          outputArray[ix][iy-1]);
-        outputArray[ix][iy] = minWeight + grid[ix][iy];
+    const [{x, y}, visited, path, cost] = stack.pop();
+
+    const neighbors = (x, y) => {
+
+      const getInfo = (x, y) => {
+        if (!grid.bounds.contains(x, y) || visited[keyOf(x, y)]) return null;              
+        // log('c', cost, grid.get(x, y));
+        return [
+          {x, y}, 
+          {...visited, [keyOf(x, y)]: true}, 
+          [...path, {x,y}], 
+          cost + grid.get(x, y),
+          grid.get(x, y)
+        ];        
+      };
+      return [
+        getInfo(x-1,y), 
+        getInfo(x+1,y), 
+        getInfo(x, y-1), 
+        getInfo(x,y+1)
+      ].filter(Boolean).sort((l, r) => l[4] - r[4]);
+    };
+
+    if (x === grid.bounds.right && y === grid.bounds.bottom) {
+      // log('found path', cost);
+      if (cost < lowest) {
+        log('new low', cost);
+        log(visualizeGrid(grid, (x, y) => visited[keyOf(x, y)] ? 'x' : grid.get(x, y)));
+        log();
+        lowest = cost;
       }
+      paths.push(cost);
+      continue;
     }
+
+    const n = neighbors(x, y);
+    if (x === 0 && y === 0) {
+      console.log(n);
+    }
+
+    n.reverse().forEach(info => {
+      stack.push(info);
+    });
   }
 
-  let width = x + 1, height = y + 1;
-  let outputArray = makeArray(width, height);
-  initArrayBorders(outputArray, grid, width, height);
-  fillArray(outputArray, grid, width, height);
-  // console.table(outputArray);
+  return lowest;
+}
 
-  return outputArray; //[x][y];
-};
-// ----------------------------------------------------

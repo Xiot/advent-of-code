@@ -9,3 +9,4 @@ export * from './map';
 export * from './io';
 export * from './logging';
 export * from './parse';
+export * from './data-structures';

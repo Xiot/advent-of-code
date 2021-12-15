@@ -1,5 +1,6 @@
 require('@babel/register');
 require('dotenv').config();
+const {isObject} = require('lodash');
 
 const fs = require('fs');
 const process = require('process');
@@ -27,8 +28,9 @@ Promise.resolve(fn?.(input)).then(result => {
   const duration = Date.now() - startTime;
 
   if (result) {
-    clipboard.writeSync(String(result));
+    const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
+    clipboard.writeSync(String(serialized));
 
-    process.send?.({ result, duration });
+    process.send?.({ result: serialized, duration });
   }
 });
