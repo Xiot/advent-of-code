@@ -23,11 +23,12 @@ const input = question.parse?.(rawInput) ?? rawInput;
 
 const startTime = Date.now();
 const fn = question[`part${part}`];
-const result = fn?.(input);
-const duration = Date.now() - startTime;
+Promise.resolve(fn?.(input)).then(result => {
+  const duration = Date.now() - startTime;
 
-if (result) {
-  clipboard.writeSync(String(result));
+  if (result) {
+    clipboard.writeSync(String(result));
 
-  process.send?.({ result, duration });
-}
+    process.send?.({ result, duration });
+  }
+});

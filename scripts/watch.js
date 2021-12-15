@@ -89,6 +89,9 @@ module.exports = {
       } else if (key === '2') {
         part = 2;
         inputName = 'sample.txt';
+      } else if (key === '3') {
+        part = 3;
+        inputName = 'sample.txt';
       } else if (key === 'd') {
         debug = !debug;
       } else {
