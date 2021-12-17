@@ -22,7 +22,7 @@ module.exports = {
         }
       }      
       
-      let questionResult;
+      let questionResult = null;
       let hasOutput = false;
 
       const child = fork('./scripts/launch.js', [year, day, part, inputName], {

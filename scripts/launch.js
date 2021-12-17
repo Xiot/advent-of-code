@@ -27,7 +27,7 @@ const fn = question[`part${part}`];
 Promise.resolve(fn?.(input)).then(result => {
   const duration = Date.now() - startTime;
 
-  if (result) {
+  if (result != null) {
     const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
     clipboard.writeSync(String(serialized));
 
