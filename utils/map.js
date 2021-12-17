@@ -2,7 +2,7 @@ import { maxOf, minOf } from "./array";
 
 function assertPosition(x, y) {
   if ((typeof x !== 'number') || (typeof y !== 'number')) {
-    throw new Error(`Invalid position. ${x}, ${y}`);
+    throw new Error(`Invalid position. ${x}, ${y} [${typeof x}, ${typeof y}]`);
   }
 }
 
@@ -18,7 +18,15 @@ export function extendBounds(b, left, top, right, bottom, zMin, zMax) {
 }
 
 export function createBounds(initialBounds) {
-  let bounds = initialBounds;
+  initialBounds = Object.assign({left: 0, right: 0, top: 0, bottom: 0, zMin: 0, zMax: 0}, initialBounds);
+  let bounds = {
+    left: Math.min(initialBounds.left, initialBounds.right),
+    right: Math.max(initialBounds.left, initialBounds.right),
+    top: Math.min(initialBounds.top, initialBounds.bottom),
+    bottom: Math.max(initialBounds.top, initialBounds.bottom),
+    zMin: Math.min(initialBounds.zMin, initialBounds.zMax),
+    zMax: Math.max(initialBounds.zMin, initialBounds.zMax)
+  };
 
   function set(left, top, right, bottom, zMin, zMax) {
     bounds = {left, top, right, bottom, zMin, zMax};

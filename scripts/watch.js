@@ -28,7 +28,7 @@ module.exports = {
       const child = fork('./scripts/launch.js', [year, day, part, inputName], {
         stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
         env: {...process.env, DEBUG: debug ? '1' : '0'}
-      });
+      });      
 
       child.on('spawn', () => {
         console.log(`\n${year} ${String(day).padStart(2, '0')} - ${inputName}\n${'='.repeat(30)}`);
@@ -72,13 +72,20 @@ module.exports = {
 
     launch(year, day, part, inputName);
 
-    console.log('s = sample, i = input, 1 = part1, 2 = part2, d = debug, q = quit');
+    console.log('s = sample, i = input, 1 = part1, 2 = part2, d = debug, k = kill, q = quit');
     while (true) {      
       const key = (await waitForKey()).name;
 
-      if (key === 'q') break;
+      if (currentChild) {
+        currentChild.kill();
+        currentChild = null;
+      }
 
+      if (key === 'q') break;
+      if (key === 'k') continue;
+      
       if (key === 's') {
+        debug = true;
         inputName = 'sample.txt';
       } else if (key === 'i') {
         debug = false;
@@ -94,6 +101,8 @@ module.exports = {
         inputName = 'sample.txt';
       } else if (key === 'd') {
         debug = !debug;
+      } else if (key === 'return') {
+        // re-run
       } else {
         continue;
       }
