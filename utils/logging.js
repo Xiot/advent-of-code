@@ -1,4 +1,14 @@
+const {inspect} = require('util');
 const defaultLogging = process.env.DEBUG === '1';
+
+export function print(obj) {
+  return inspect(obj, {depth: 10, colors: true});
+}
+
+const prepareArgs = (args) => {
+  return args.map(a => typeof(a) === 'object' || Array.isArray(a) ? print(a) : a);
+};
+
 export function createLog(opts = {enable: defaultLogging}) {
 
   let depth = 0;
@@ -8,7 +18,7 @@ export function createLog(opts = {enable: defaultLogging}) {
     
     // NOTE: when depth > 0 and multiple lines are writen, only the first line will be intented
     process.stdout.write(indent());
-    console.log(...args);
+    console.log(...prepareArgs(args));
   };
 
   return Object.assign(log, 
