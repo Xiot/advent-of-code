@@ -6,7 +6,18 @@ export function print(obj) {
 }
 
 const prepareArgs = (args) => {
-  return args.map(a => typeof(a) === 'object' || Array.isArray(a) ? print(a) : a);
+  return args.map(a => {
+    if (a == null) return a;
+    if (typeof a !== 'object') {
+      return a;
+    }
+
+    if ('toJSON' in a) {
+      return print(a.toJSON());
+    }
+
+    return typeof(a) === 'object' || Array.isArray(a) ? print(a) : a;
+  });
 };
 
 export function createLog(opts = {enable: defaultLogging}) {

@@ -15,6 +15,19 @@ export function permutations(values) {
   return items;
 }
 
+export function* combinations(array, length = array.length) {
+  for (let i = 0; i < array.length; i++) {
+    if (length === 1) {
+      yield [array[i]];
+    } else {
+      const remaining = combinations(array.slice(i + 1, array.length), length - 1);
+      for (let next of remaining) {
+        yield [array[i], ...next];
+      }
+    }
+  }
+}
+
 export const maxOf = (arr, accessor = x => x) => accessor(maxBy(arr, accessor));
 export const minOf = (arr, accessor = x => x) => accessor(minBy(arr, accessor));
 export const sumOf = (arr, accessor = x => x) => arr.reduce((sum, value) => sum + accessor(value), 0);

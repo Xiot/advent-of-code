@@ -76,6 +76,14 @@ export function createBounds(initialBounds) {
       return (this.right - this.left + 1) *
       (this.bottom - this.top +1) *
       (this.zMax - this.zMin + 1);
+    },
+    equals(r) {
+      return this.left === r.left 
+        && this.right === r.right
+        && this.top === r.top
+        && this.bottom === r.bottom
+        && this.zMin === r.zMin
+        && this.zMax === r.zMax;
     }
   };
 }
