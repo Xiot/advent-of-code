@@ -590,7 +590,7 @@ function byPosition(l, r) {
 
 function identity(p) { return {...p};};
 
-function rotateYAccessor(accessor, rotate) {
+function rotateYAccessor(rotate, accessor) {
   switch(rotate) {
   case ROTATIONS.none: return accessor;
   case ROTATIONS.one: return ({x, y, z}) => accessor({x: z, y, z: -x});
@@ -600,7 +600,7 @@ function rotateYAccessor(accessor, rotate) {
   throw new Error(`invalid rotate. ${rotate}`);
 };
 
-function rotateXAccessor(accessor, rotate) {
+function rotateXAccessor(rotate, accessor) {
   switch(rotate) {
   case ROTATIONS.none: return accessor;
   case ROTATIONS.one: return ({x, y, z}) => accessor({x, y: -z, z: y});
@@ -609,7 +609,7 @@ function rotateXAccessor(accessor, rotate) {
   }
 }
 
-function rotateZAccessor(accessor, rotate) {
+function rotateZAccessor(rotate, accessor) {
   switch(rotate) {
   case ROTATIONS.none: return accessor;
   case ROTATIONS.one: return ({x, y, z}) => accessor({ x: y, y: -x, z });
@@ -619,11 +619,10 @@ function rotateZAccessor(accessor, rotate) {
 }
 
 function rotateAccessor(accessor) {
-  return ({x, y, z}) => rotateXAccessor(
-    rotateYAccessor(
-      rotateZAccessor(accessor, z)
-      , y), x
-  );
+  return ({x, y, z}) => 
+    rotateXAccessor(x, 
+      rotateYAccessor(y, 
+        rotateZAccessor(z, accessor)));
 }
 function rotate(pos) {
   return rotateAccessor(identity)(pos);
