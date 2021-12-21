@@ -1,4 +1,7 @@
 const readline = require('readline');
+const fs = require('fs');
+const path = require('path');
+
 export function prompt(query) {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -32,4 +35,21 @@ export function waitForKey() {
 
     process.stdin.on('keypress', listener).resume();
   });
+}
+
+const OUTPUT_FOLDER = process.env.SOLUTION_OUTPUT_PATH 
+  || path.join(process.env.SOLUTION_PATH || process.cwd(), './output');
+  
+export function clearOutputPath() {
+  if (fs.existsSync(OUTPUT_FOLDER)) {    
+    fs.rmSync(OUTPUT_FOLDER, {force: true, recursive: true});
+  }
+  fs.mkdirSync(OUTPUT_FOLDER);
+}
+
+export function writeOutputFile(name, text) {
+  if (typeof text !== 'string') {
+    text = JSON.stringify(text);
+  }
+  fs.writeFileSync(path.join(OUTPUT_FOLDER, name), text, 'utf-8');
 }

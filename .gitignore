@@ -3,6 +3,7 @@ node_modules
 .env
 scratch.js
 **/cache
+**/output
 
 .DS_Store
 yarn-error.log

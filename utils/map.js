@@ -111,6 +111,7 @@ export function createGridMap(defaultValue) {
     set markOnGet(value) { markOnGet = value; },
     clone() {
       const clone = createGridMap(defaultValue);
+      clone.markOnGet = this.markOnGet;
       Array.from(this.entries()).forEach(([{x, y}, value]) => clone.set(x, y, value));
       return clone;
     },

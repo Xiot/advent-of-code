@@ -1,8 +1,11 @@
 const chokidar = require('chokidar');
 const { fork } = require('child_process');
-const { waitForKey } = require('../utils/io');
-const { buildFilename } = require('./utils');
 const { debounce } = require('lodash');
+const path = require('path');
+
+const { waitForKey } = require('../utils/io');
+const { buildFilename, solutionPath } = require('./utils');
+
 
 module.exports = {
   async watch(year, day) {
@@ -14,6 +17,11 @@ module.exports = {
     let debug = true;
 
     let currentChild;
+
+    process.on('beforeExit', () => {
+      currentChild && currentChild.kill();
+    });
+
     function launch(year, day, part, inputName) {
       
       if (currentChild) {
@@ -27,7 +35,13 @@ module.exports = {
 
       const child = fork('./scripts/launch.js', [year, day, part, inputName], {
         stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-        env: {...process.env, DEBUG: debug ? '1' : '0'}
+        env: {
+          ...process.env, 
+          DEBUG: debug ? '1' : '0',
+          SOLUTION_PATH: path.join(process.cwd(), solutionPath(year, day)),
+          SOLUTION_OUTPUT_PATH: path.join(process.cwd(), solutionPath(year, day), 'output'),
+          AOC_INPUT: path.join(process.cwd(), solutionPath(year, day), inputName)
+        }
       });      
 
       child.on('spawn', () => {
