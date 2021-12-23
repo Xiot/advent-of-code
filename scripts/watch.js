@@ -68,7 +68,7 @@ module.exports = {
         if (questionResult) {
           console.log(`${formatDuration(questionResult.duration)} Part ${'I'.repeat(part)}: ${questionResult.result}`);
         } else {
-          console.log('no output');
+          console.log(`Part ${'I'.repeat(part)}: no output`);
         }
       });
       currentChild = child;
