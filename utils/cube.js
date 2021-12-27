@@ -7,18 +7,6 @@ function assertPosition(x, y) {
   }
 }
 
-export function extendBounds(b, left, top, right, bottom, zMin, zMax) {
-  return createBounds({
-    left:   b.left + left,
-    top:    b.top + top,
-    right:  b.right + right,
-    bottom: b.bottom + bottom,
-    zMin:   b.zMin + (zMin ?? 0),
-    zMax:   b.zMax + (zMax ?? 0)
-  });
-}
-
-
 export function createCube(defaultValue) {
   const cache = new Map();
   const keyOf = (x, y, z) => `${x},${y},${z}`;
