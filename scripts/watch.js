@@ -48,11 +48,12 @@ module.exports = {
         console.log(`\n${year} ${String(day).padStart(2, '0')} - ${inputName}\n${'='.repeat(30)}`);
       });
 
-      child.on('message', result => {
+      child.on('message', result => {        
         questionResult = result;
       });
 
       child.stdout.on('data', data => {
+        console.log('got data');
         if (!debug) return;
         hasOutput = true;
         process.stdout.write(data);

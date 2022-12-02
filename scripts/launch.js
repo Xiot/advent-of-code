@@ -24,13 +24,31 @@ const input = question.parse?.(rawInput) ?? rawInput;
 
 const startTime = Date.now();
 const fn = question[`part${part}`];
-Promise.resolve(fn?.(input)).then(result => {
+Promise.resolve(fn?.(input)).then(async result => {
   const duration = Date.now() - startTime;
-
-  if (result != null) {
+  
+  if (result != null) {    
     const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
-    clipboard.writeSync(String(serialized));
-
-    process.send?.({ result: serialized, duration });
+    
+    await copy(String(serialized));
+    process.send?.({ result: serialized, duration });                
   }
 });
+
+const isWsl = require('is-wsl');
+function copy(value) {
+  if (!isWsl) {    
+    return clipboard.write(value);
+  }
+
+  return new Promise((resolve, reject) => {
+    const child = require('child_process').exec(`echo -n '${value}' | clip.exe`);
+    child.on('close', (code, sig) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(sig);
+      }
+    });
+  });
+}
