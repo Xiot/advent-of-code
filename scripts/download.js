@@ -69,7 +69,8 @@ function markStartTime(year, day, time) {
 }
 
 function launch(year, day) {
-  require('child_process').exec(`open https://adventofcode.com/${year}/day/${day}`);
+  const open = require('open');
+  open(`https://adventofcode.com/${year}/day/${day}`);
 }
 
 function formatDuration(ms) {

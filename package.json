@@ -22,7 +22,8 @@
     "eslint": "^8.3.0",
     "is-wsl": "^2.2.0",
     "lodash": "^4.17.15",
-    "node-fetch": "2"
+    "node-fetch": "2",
+    "open": "^8.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.5",
