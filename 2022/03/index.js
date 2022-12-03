@@ -58,10 +58,5 @@ function findCommon(input, offset) {
 }
 
 function distinctLetters(value) {
-  return (new Set(value)).values();
-  // const letters = new Set();
-  // for(let letter of value) {
-  //   letters.add(letter);
-  // }
-  // return letters.values();
+  return (new Set(value)).values();  
 }
