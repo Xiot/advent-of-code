@@ -52,8 +52,7 @@ module.exports = {
         questionResult = result;
       });
 
-      child.stdout.on('data', data => {
-        console.log('got data');
+      child.stdout.on('data', data => {        
         if (!debug) return;
         hasOutput = true;
         process.stdout.write(data);
