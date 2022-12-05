@@ -18,6 +18,13 @@ if (Object.keys(question).length === 0) {
   process.exit(0);
 }
 
+global.args = {
+  year,
+  day,
+  part,
+  inputName,
+};
+
 const rawInput = fs.readFileSync(buildFilename(year, day, inputName), 'utf-8');
 
 const input = question.parse?.(rawInput) ?? rawInput;
