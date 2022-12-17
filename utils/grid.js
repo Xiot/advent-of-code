@@ -13,13 +13,15 @@ export function* pointsWithin(gridOrBounds) {
   }
 }
 
-export function visualizeGrid(gridOrBounds, render) {
+export function visualizeGrid(gridOrBounds, render, opts) {
+  opts ??= {printRowNumbers: false, printColNumbers: false};
+
   const lines = [];
   // Allow the caller to pass a grid or bounds
   const {left = 0, top = 0, bottom, right} = gridOrBounds.bounds || gridOrBounds;
 
   for(let y = top; y <= bottom; y++) {
-    let line = '';
+    let line = opts.printRowNumbers ? String(y).padStart(5, ' ') + ': ' :  '';
     for(let x = left; x <= right; x++) {
       line += render(x, y);
     }
