@@ -110,7 +110,7 @@ export function createGridMap(defaultValue) {
   const keyOf = (x, y) => `${x},${y}`;
   const parseKey = key => key.split(',').map(v => parseInt(v));
   
-  const bounds = createBounds();
+  let bounds = createBounds();
 
   let markOnGet = true;
   return {
@@ -164,13 +164,13 @@ export function createGridMap(defaultValue) {
     },
     recalculateBounds() {
       const keys = Array.from(this.keys());
-      this.bounds = createBounds({
+      bounds = createBounds({
         left: minOf(keys, k => k.x),
         right: maxOf(keys, k => k.x),
         top: minOf(keys, k => k.y),
         bottom: maxOf(keys, k => k.y)
       });
-      return this.bounds;
+      return bounds;
     },
     ring: function*(cx, cy) {
       for(let x = cx-1; x <= cx+1; x++) {
