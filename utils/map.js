@@ -196,6 +196,17 @@ export function createGridMap(defaultValue) {
         const [x, y] = parseKey(key);
         yield [{x, y}, value];
       }
+    },
+    prune(bounds) {
+      const clone = createGridMap(defaultValue);
+      for(let x = bounds.left; x <= bounds.right; x++) {
+        for(let y = bounds.top; y <= bounds.bottom; y++) {
+          if (cache.get(keyOf(x, y))) {
+            clone.set(x, y, cache.get(keyOf(x, y)));
+          }
+        }
+      }
+      return clone;
     }
   };
 }
