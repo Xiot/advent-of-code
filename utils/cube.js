@@ -12,7 +12,7 @@ export function createCube(defaultValue) {
   const keyOf = (x, y, z) => `${x},${y},${z}`;
   const parseKey = key => key.split(',').map(v => parseInt(v));
   
-  const bounds = createBounds();
+  let bounds = createBounds();
 
   let markOnGet = true;
   return {
@@ -66,7 +66,7 @@ export function createCube(defaultValue) {
     },
     recalculateBounds() {
       const keys = Array.from(this.keys());
-      this.bounds = createBounds({
+      bounds = createBounds({
         left: minOf(keys, k => k.x),
         right: maxOf(keys, k => k.x),
         top: minOf(keys, k => k.y),
