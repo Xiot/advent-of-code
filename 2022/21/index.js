@@ -70,47 +70,16 @@ function inverse(op) {
   }
 }
 
-export function part3(input) {
-
-}
-
 export function part2(input) {
 
   const root = input.find(x => x.name === 'root');
-  // input.find(x => x.name === 'humn')
-
+  
   const cache = input.reduce((acc, cur) => {
     return {
       ...acc,
       [cur.name]: cur
     };
   }, {});
-
-  // const node = 
-
-  // function solveFor(name) {
-
-  //   let remaining = input.filter(x => !('value' in x)).length;
-
-
-  //   while(remaining > 0) {
-    
-  //     for(let i = 0; i < input.length; i++) {
-  //       const monkey = input[i];
-  //       if ('value' in monkey) continue;
-
-  //       const {leftName, op, rightName} = monkey;
-  //       log(leftName, op, rightName);
-
-  //       const left = cache[leftName].value;
-  //       const right = cache[rightName].value;
-  //       if (left != null && right != null) {
-  //         monkey.value = calc(left, op, right);
-  //         remaining--;
-  //       }
-  //     }
-  //   }
-  // }
 
   function reduceMonkey(name) {
     const node = cache[name];    
