@@ -63,7 +63,7 @@ export const parse = byLine(line => {
 export function part1(input) {
   // log('input', input);
 
-  const bp = input[1];
+  const bp = input[0];
   // log(bp);
   // testRun(bp);
 
@@ -136,7 +136,9 @@ function calculate2(bp) {
   // log(state.toString());
   const cache = new Map();
   cache.set('max', -1);
-  return recurse(bp, state, cache);
+  const best = recurse(bp, state, cache);
+  log(cache.get('runs'));
+  return best;
 }
 
 function buildIfAble(bp, state, cache, type) {
@@ -150,6 +152,7 @@ function buildIfAble(bp, state, cache, type) {
 
 function recurse(bp, state, cache) {
   const MAX_TIME = 24;
+  cache.set('runs', (cache.get('runs') ?? 0) + 1);
   
   // if (cache.has(state.key)) {
   //   const geodes = cache.get(state.key);    
@@ -175,53 +178,44 @@ function recurse(bp, state, cache) {
   
   const results = [];
 
+  // if (state.robots.geode < 1 && state.storage.geode < 5 && (MAX_TIME - state.time < 5)) {return state;}
+  const timeLeft = MAX_TIME - state.time;
+  if (timeLeft === 1) {
+    return state.collect().advance();
+  }
+
   if (canBuild(bp, 'geode', state)) {
     // log('build geode', state.toString());
     state = state.collect();
     state = state.build(bp, 'geode').advance();
+
     const value = recurse(bp, state, cache);    
     // cache.set(state.key, value);    
     return value;
   }
 
+  // if (state.robots.clay === 0) {
+  //   while(state.storage.ore < bp.robots.clay.ore) {
+  //     state = state.collect().advance();
+  //   }
+  //   return buildIfAble(bp, state, cache, 'clay');
+  // }
+
+
   if (canBuild(bp, 'obsidian', state)) {
     results.push(buildIfAble(bp, state, cache, 'obsidian'));
     results.push(recurse(bp, state.collect().advance(), cache));
-  } else if(canBuild(bp, 'clay', state) && state.storage.clay < bp.robots.obsidian.clay) {
+  } else if(canBuild(bp, 'clay', state) && state.storage.clay < bp.robots.obsidian.clay && state.robots.clay < Math.max(bp.robots.obsidian.clay)) {
     results.push(buildIfAble(bp, state, cache, 'clay'));
     results.push(recurse(bp, state.collect().advance(), cache));
   
-  } else if(canBuild(bp, 'ore', state)) {
+  } else if(canBuild(bp, 'ore', state) && state.robots.ore < Math.max(bp.robots.ore.ore, bp.robots.clay.ore, bp.robots.obsidian.ore, bp.robots.geode.ore)) {
     results.push(buildIfAble(bp, state, cache, 'ore'));
     results.push(recurse(bp, state.collect().advance(), cache));
   } else {
     results.push( recurse(bp, state.collect().advance(), cache));
   }
 
-  // for(let [reqType, reqAmount] of Object.entries(bp.robots.geode)) {
-  // if (state.storage.ore < bp.robots.geode.ore) {
-  //   results.push(buildIfAble(bp, state, cache, 'ore'));
-  // }
-  // if (state.storage.obsidian < bp.robots.geode.obsidian) {
-  //   // log('should build obsidian');
-  //   if (canBuild(bp, 'obsidian', state)) {
-  //     results.push(buildIfAble(bp, state, cache, 'obsidian'));
-  //   } else {
-  //     if (state.storage.clay < bp.robots.obsidian.clay) {
-  //       // log('should build clay');
-  //       if (canBuild(bp, 'clay', state)) {
-  //         // log('build clay');
-  //         results.push(buildIfAble(bp, state, cache, 'clay'));
-  //       }
-  //     }
-  //   }
-  // }
-  // results.push(buildIfAble(bp, state, cache, 'ore'));
-  
-  
-
-  // return results.filter(x => x !== null).sort((l, r) => r - l)[0];
-  // log(results);
 
   return results.sort((l, r) => r.storage.geode - l.storage.geode)[0];
 }
