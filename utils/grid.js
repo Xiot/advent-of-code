@@ -15,7 +15,8 @@ export function* pointsWithin(gridOrBounds) {
 
 export function visualizeGrid(gridOrBounds, render, opts) {
   opts ??= {printRowNumbers: false, printColNumbers: false};
-
+  render ??= (x, y) => gridOrBounds.get(x, y);
+  
   const lines = [];
   // Allow the caller to pass a grid or bounds
   const {left = 0, top = 0, bottom, right} = gridOrBounds.bounds || gridOrBounds;
