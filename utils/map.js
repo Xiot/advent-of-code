@@ -53,7 +53,7 @@ export function createBounds(initialBounds, opt = {order: true}) {
     get depth() {return this.zMax - this.zMin + 1;},
 
     toJSON() {
-      return bounds;
+      return {...bounds, width: this.width, height: this.height};
     },
     valueOf() {
       return bounds;

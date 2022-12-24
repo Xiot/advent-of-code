@@ -57,6 +57,38 @@ export function findBounds(input, accessX = p => p[0], accessY = p => p[1]) {
   };
 }
 
+export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn) {
+
+  let costs = {};
+  let backtrace = {};
+  let queue = new PriorityQueue(item => item.score);
+  
+  const costOf = (node) => costs[`${keyOf(node)}`] ?? Number.MAX_SAFE_INTEGER;
+
+  costs[keyOf(start)] = 0;
+  queue.push({node: start, score: 0});
+
+  while(queue.length > 0) {
+    const {node, score} = queue.pop();    
+    if(atEndFn(node)) {
+      // TODO: Needs path
+      return {node, score};
+    }
+
+    const neighbors = getNeighbors(node);    
+    
+    neighbors.forEach(n => {
+      const neighborCost = costOf(node) + costFn(node, n);      
+      if (neighborCost < costOf(n)) {        
+        costs[keyOf(n)] = neighborCost;
+        backtrace[keyOf(n)] = node.pos;
+        queue.push({node: n, score: neighborCost + hueristicFn(n)});
+      }
+    });
+  }
+  return null;
+}
+
 // based off of https://medium.com/@adriennetjohnson/a-walkthrough-of-dijkstras-algorithm-in-javascript-e94b74192026
 export function dijkstra(grid, start, end) {
   
