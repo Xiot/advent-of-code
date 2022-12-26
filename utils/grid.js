@@ -57,31 +57,41 @@ export function findBounds(input, accessX = p => p[0], accessY = p => p[1]) {
   };
 }
 
-export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn) {
+export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, opt) {
 
   let costs = {};
   let backtrace = {};
-  let queue = new PriorityQueue(item => item.score);
+  let queue = new PriorityQueue(item => item.score, opt?.mode);
   
   const costOf = (node) => costs[`${keyOf(node)}`] ?? Number.MAX_SAFE_INTEGER;
 
   costs[keyOf(start)] = 0;
   queue.push({node: start, score: 0});
 
+  function collectPaths(node) {
+    let path = [node];
+    let lastPos = node;    
+    while(keyOf(lastPos) != keyOf(start)) {      
+      const prev = backtrace[keyOf(lastPos)];
+      path.unshift(prev);
+      lastPos = prev;
+    }
+    return path;
+  }
+
   while(queue.length > 0) {
-    const {node, score} = queue.pop();    
+    const {node, score} = queue.pop();
     if(atEndFn(node)) {
       // TODO: Needs path
-      return {node, score};
+      return {node, score, path: collectPaths(node)};
     }
 
     const neighbors = getNeighbors(node);    
-    
     neighbors.forEach(n => {
       const neighborCost = costOf(node) + costFn(node, n);      
       if (neighborCost < costOf(n)) {        
         costs[keyOf(n)] = neighborCost;
-        backtrace[keyOf(n)] = node.pos;
+        backtrace[keyOf(n)] = node;
         queue.push({node: n, score: neighborCost + hueristicFn(n)});
       }
     });

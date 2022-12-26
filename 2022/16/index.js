@@ -1,5 +1,5 @@
 
-import { autoParse, log, byLine } from "../../utils";
+import { autoParse, log, byLine, aStar } from "../../utils";
 
 const LINE_RE = /Valve ([a-z]+) has flow rate=(\d+); tunnels? leads? to valves? (.+)/i;
 export const parse = byLine(line => {
@@ -10,6 +10,67 @@ export const parse = byLine(line => {
     edges: tunnels.split(', ')
   };
 });
+
+
+/*
+  state: {room, pressure, time}
+*/
+
+// Not working
+export function part3(input) {
+
+  const MAX_TIME = 30;
+
+  const lookup = input.reduce((acc, cur) => ({...acc, [cur.name]: cur}), {});
+  
+  const valves = input.filter(x => x.rate > 0);
+
+  const w = aStar(
+    n => `${n.time}|${n.pressure}|${Object.keys(n.open).join(',')}`,
+    {time: 0, room: 'AA', pressure: 0, open: {}},
+    n => {
+      const atEnd = n.time >= MAX_TIME || (Object.keys(n.open).length === valves.length);      
+      return atEnd;
+    },
+    n => {
+      const room = n.room;
+      const item = lookup[n.room];
+      
+      return [
+        !n.open[room] && item.rate > 0 ? {
+          time: n.time + 1, 
+          room: n.room, 
+          pressure: n.pressure += item.rate * (MAX_TIME - (n.time + 1)),
+          open: {
+            ...n.open,
+            [n.room]: true
+          }
+        } : undefined,
+        ...(valves
+          .filter(edge => !n.open[edge.name] && edge.name !== n.name)
+          .map(edge => {
+            const distance = distanceBetween(lookup, n.room, edge.name);            
+            const arriveTime = n.time + distance;
+            const remainingTime = MAX_TIME - arriveTime - 1;
+            
+            if (arriveTime +1 > MAX_TIME ) return undefined;
+            return {
+              time: arriveTime + 1,
+              room: edge.name,
+              pressure: n.pressure + edge.rate * remainingTime,
+              open: {...n.open, [edge.name]: true}
+            };
+          }))
+      ].filter(x => x);
+    },
+    () => 1,
+    n => (MAX_TIME - n.time) * n.pressure,
+    {mode: 'max'}
+  );
+  if (!w) return 'none';
+  log(w);
+  return w.node.pressure;
+}
 
 export function part1(input) {
   const rooms = build(input);
@@ -62,6 +123,9 @@ function distanceBetween(rooms, from, to) {
   while(queue.length > 0) {
     const loc = queue.shift();
     const room = rooms[loc.room];
+    if (room == null) {
+      log('d.nf', room, loc.room);
+    }
 
     if (loc.room === to) return loc.distance;
 
@@ -74,11 +138,8 @@ function distanceBetween(rooms, from, to) {
   throw new Error('path not found');
 }
 
-function explore(rooms) {
-
-  const TOTAL_TIME = 30;
-
-  const results = [];
+function explore(rooms, TOTAL_TIME = 30, exclude = []) {
+  
   const queue = [{loc: 'AA', history: [], open: {}, time: 0, pressure: 0}];
 
   const roomsList = Object.values(rooms);
@@ -105,6 +166,7 @@ function explore(rooms) {
     const distances = getDistances(state.loc);
 
     const remaining = roomsList
+      .filter(r => !exclude.includes(r.name))
       .filter(r => !state.open[r.name] && r.rate > 0)
       .map(r => {
         return {
@@ -121,20 +183,10 @@ function explore(rooms) {
       });
 
     if (remaining.length === 0) {
-      // const pressure = calculate(state, rooms);
-      // results.push({...state, pressure});
-      // results.push(state);
 
       if (max == null || state.pressure > max.pressure) {
         max = state;
       }
-
-      // if (pressure > max) {
-      //   max = pressure;
-      // }
-      // if (results.length % 10 === 0) {
-      //   log('result', results.length, max);
-      // }
 
       continue;
     }
@@ -142,33 +194,27 @@ function explore(rooms) {
     for(let o of remaining) {
       queue.push({
         loc: o.name,
-        time: o.time,
-        // history: [...state.history, {task: 'open', room: o.name, time: o.time}],
+        time: o.time,        
         pressure: state.pressure + (TOTAL_TIME - o.time) * rooms[o.name].rate,
         open: {...state.open, [o.name]: true}
       });
       
     }
-  }
-  // return results;
+  }  
   return max;
 }
 
 
 export function part2(input) {
+
   const rooms = build(input);
+  const r = explore(rooms, 26);
 
-  let results = explore2(rooms);
-  if (!Array.isArray(results)) results = [results];
+  const used = Object.keys(r.open);    
+  const r2 = explore(rooms, 26, used);  
+
+  return r.pressure + r2.pressure;
   
-  results.sort((l, r) => {
-    return r.pressure - l.pressure;
-  });
-
-  log(results[0]);
-  log('done', results.length);
-
-  return results[0].pressure;
 }    
 
 function build(rooms) {
