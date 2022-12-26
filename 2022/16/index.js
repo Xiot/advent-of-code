@@ -1,5 +1,5 @@
 
-import { autoParse, log, byLine, aStar } from "../../utils";
+import { autoParse, log, byLine, aStar, sumOf } from "../../utils";
 
 const LINE_RE = /Valve ([a-z]+) has flow rate=(\d+); tunnels? leads? to valves? (.+)/i;
 export const parse = byLine(line => {
@@ -26,7 +26,7 @@ export function part3(input) {
   const valves = input.filter(x => x.rate > 0);
 
   const w = aStar(
-    n => `${n.time}|${n.pressure}|${Object.keys(n.open).join(',')}`,
+    n => `${n.time}|${n.pressure}|${Object.keys(n.open).sort().join(',')}`,
     {time: 0, room: 'AA', pressure: 0, open: {}},
     n => {
       const atEnd = n.time >= MAX_TIME || (Object.keys(n.open).length === valves.length);      
@@ -53,7 +53,7 @@ export function part3(input) {
             const arriveTime = n.time + distance;
             const remainingTime = MAX_TIME - arriveTime - 1;
             
-            if (arriveTime +1 > MAX_TIME ) return undefined;
+            if (arriveTime + 1 > MAX_TIME ) return undefined;
             return {
               time: arriveTime + 1,
               room: edge.name,
@@ -64,8 +64,15 @@ export function part3(input) {
       ].filter(x => x);
     },
     () => 1,
-    n => (MAX_TIME - n.time) * n.pressure,
-    {mode: 'max'}
+    n => {
+      let potentialPressure = 0;
+      const openList = Object.keys(n.open);
+      // log(openList);
+      const closed = valves.filter(v => !openList.includes(v.name));
+      potentialPressure = sumOf(closed, n => n.rate * (MAX_TIME - n.time));
+      return potentialPressure - n.pressure;
+    },
+    {mode: 'min'}
   );
   if (!w) return 'none';
   log(w);

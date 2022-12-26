@@ -81,8 +81,7 @@ export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, 
 
   while(queue.length > 0) {
     const {node, score} = queue.pop();
-    if(atEndFn(node)) {
-      // TODO: Needs path
+    if(atEndFn(node)) {      
       return {node, score, path: collectPaths(node)};
     }
 
