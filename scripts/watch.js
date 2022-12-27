@@ -40,7 +40,8 @@ module.exports = {
           DEBUG: debug ? '1' : '0',
           SOLUTION_PATH: path.join(process.cwd(), solutionPath(year, day)),
           SOLUTION_OUTPUT_PATH: path.join(process.cwd(), solutionPath(year, day), 'output'),
-          AOC_INPUT: path.join(process.cwd(), solutionPath(year, day), inputName)
+          AOC_INPUT: path.join(process.cwd(), solutionPath(year, day), inputName),
+          IS_SAMPLE: inputName === 'sample.txt' ? 1 : 0,
         }
       });      
 

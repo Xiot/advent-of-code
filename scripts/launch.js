@@ -23,6 +23,7 @@ global.args = {
   day,
   part,
   inputName,
+  isSample: inputName === 'sample.txt'
 };
 
 const rawInput = fs.readFileSync(buildFilename(year, day, inputName), 'utf-8');
