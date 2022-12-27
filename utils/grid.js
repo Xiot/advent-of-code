@@ -57,7 +57,7 @@ export function findBounds(input, accessX = p => p[0], accessY = p => p[1]) {
   };
 }
 
-export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, opt) {
+export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, opt = {}) {
 
   let costs = {};
   let backtrace = {};
@@ -81,6 +81,7 @@ export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, 
 
   while(queue.length > 0) {
     const {node, score} = queue.pop();
+    opt.debug && console.log(score, node);
     if(atEndFn(node)) {      
       return {node, score, path: collectPaths(node)};
     }
