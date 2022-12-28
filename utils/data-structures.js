@@ -53,13 +53,14 @@ export function createCircle(initial) {
 
     get tail() {return tail;},
     get length() {
-      let l = 1;
-      let cur = head.next;
-      while(cur !== head) {
-        l++;
-        cur = cur.next;
-      }
-      return l;
+      return length;
+      // let l = 1;
+      // let cur = head.next;
+      // while(cur !== head) {
+      //   l++;
+      //   cur = cur.next;
+      // }
+      // return l;
     },
 
     indexOf(node) {
@@ -108,6 +109,7 @@ export function createCircle(initial) {
       node.next = oldTNext;
       oldTNext.prev = node;
       length++;
+      return node;
     },
     walk(node, steps) {
 
