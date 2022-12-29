@@ -76,8 +76,6 @@ export function part2(input) {
 
   let dir = 0;
   let pos = start;
-
-  let word = '';
   let steps = 0;
 
   while(true) {
@@ -86,13 +84,10 @@ export function part2(input) {
     const block = grid.get(pos.x, pos.y);
     if (block === ' ') {
       return steps;
-      // return word;
     }
 
     if (block === '+') {
       dir = findNewDirection(grid, pos.x, pos.y, dir);
-    } else if (isLetter(block)) {
-      word += block;
     }
   }
 }    
