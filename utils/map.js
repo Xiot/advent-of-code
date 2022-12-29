@@ -210,3 +210,34 @@ export function createGridMap(defaultValue) {
     }
   };
 }
+
+
+export function createBucketMap(keyFn) {
+  const cache = new Map();
+  return {
+    add(value) {
+      const key = keyFn(value);
+      let bucket = cache.get(key);
+      if (!bucket) {
+        bucket = [];
+        cache.set(key, bucket);
+      }
+      bucket.push(value);
+    },
+    values() {
+      return cache.values();
+    },
+    keys() {
+      return cache.keys();
+    },
+    entries() {
+      return cache.entries();
+    },
+    bucketSize(value) {
+      const key = keyFn(value);
+      const bucket = cache.get(key);
+      return bucket?.length ?? 0;
+    },
+    get size() {return cache.size;}
+  };
+}
