@@ -96,6 +96,9 @@ export function createBounds(initialBounds, opt = {order: true}) {
 }
 
 export function loadGrid(data, defaultValue) {
+  if (typeof data === 'string') {
+    data = data.split('\n');
+  }
   const grid = createGridMap(defaultValue);
   for(let y = 0; y < data.length; y++) {
     for(let x = 0; x < data[0].length; x++) {
