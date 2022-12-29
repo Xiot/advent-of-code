@@ -20,11 +20,13 @@ export const parse = byLine(line => {
 export function part1(input) {
   
   input = input.filter(Boolean);
+  log('ops', input.length);
   const cpu = createPartOneCpu();
   
-  let mulCount = 0;
+  let mulCount = 0;  
   while(true) {
     if (cpu.ip < 0 || cpu.ip >= input.length) break;
+    
     const cmd = input[cpu.ip];
     if (cmd.op === 'mul') 
       mulCount++;
@@ -33,13 +35,14 @@ export function part1(input) {
   return mulCount;
 }
 
-// 501 - low
+//  501 - low
+// 1000 - high
 export function part2(input) {
   const isSample = global.args.isSample;
   if (!isSample) {
     return calc();
   }
-  input = input.filter(Boolean);
+  input = input.filter(Boolean);  
   const cpu = createPartOneCpu({a: 1});
   
   let tick = 0;
@@ -49,9 +52,9 @@ export function part2(input) {
     const cmd = input[cpu.ip];
     
     cpu.execute(cmd);
-    if (tick % 1000 === 0) {
-      log(tick);
-    }
+    // if (tick % 1000 === 0) {
+    //   log(tick);
+    // }
     // log(
     //   String(tick).padStart(4), 
     //   String(cpu.ip).padStart(2), 
@@ -78,9 +81,9 @@ function createPartOneCpu(initial = {}) {
   }
 
   function valueOf(nameOrValue) {
-    return typeof nameOrValue === 'string' 
+    return (typeof nameOrValue === 'string' 
       ? registers[nameOrValue]
-      : nameOrValue;
+      : nameOrValue) ?? 0;
   }
 
   function execute(cmd) {

@@ -7,7 +7,7 @@ export function calc() {
   c = b;
 
   b *= 100;
-  b -= 100000;
+  b -= -100000;
   c = b;
   c -= -17000;
   while(true) {
@@ -20,7 +20,7 @@ export function calc() {
         g = d;
         g *= e;
         g -= b;
-        if (g !== 0) {
+        if (g === 0) {
           f = 0;
         }
         e -= -1;
