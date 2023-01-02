@@ -125,6 +125,10 @@ export function createGridMap(defaultValue) {
       Array.from(this.entries()).forEach(([{x, y}, value]) => clone.set(x, y, value));
       return clone;
     },
+    empty(x, y) {
+      assertPosition(x, y);
+      return this.get(x, y) === defaultValue;
+    },
     has(x, y) {
       assertPosition(x, y);
       return cache.has(keyOf(x, y));
