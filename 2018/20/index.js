@@ -1,5 +1,5 @@
 
-import { autoParse, log, createGridMap, visualizeGrid } from "../../utils";
+import { autoParse, log, createGridMap, visualizeGrid, maxOf, minOf } from "../../utils";
 
 export const parse = parseInput;
 
@@ -7,16 +7,24 @@ export function part1(input) {
   const reader = createReader(input);
   const tokens = reader.read();
   log(tokens);
-  // return; 
-  const node = createMap(tokens);  
-  const grid = createGrid(node);
   
-  grid.set(node.x*2, node.y*2, 'X');
+  // return minLengthOf(tokens);
+  // return maxLengthOf([ [ 'N', 'E', 'W', 'S' ], [ '' ] ]);
+  
+  // return; 
+  const {start, nodes, cache} = createMap(tokens);  
+  const grid = createGrid(start);
+  
+  grid.set(start.x*2, start.y*2, 'X');
   console.log(
     visualizeGrid(grid, (x, y) => grid.get(x, y) ?? '#')
   );
-  const farthest = findFarthestRoom(node);
-  return farthest;
+  
+  const e = cache.get('1,0');
+  log(e);
+
+  // const farthest = findFarthestRoom(node);
+  // return farthest;
 }
 
 function findFarthestRoom(start) {
@@ -128,7 +136,7 @@ function createReader(text, startIndex = 0) {
     
     if (text[index] === ')') {
       log.pop(`~s ${si}`, [''], text[index]);
-      return [''];
+      return {type: 'sequence', values: ['']};
     }
     if (text[index] === '(') {
       const opts = readOptions();
@@ -140,7 +148,17 @@ function createReader(text, startIndex = 0) {
     while(index < text.length) {
       const char = text[index];
       if (isDirection(char)) {
+
+        // let s = '';
+        // while(index < text.length && isDirection(text[index])) {
+        //   s += text[index];
+        //   index++;
+        // }
+        // sequence.push(s);
+        // continue;
+
         sequence.push(char);
+        // sequence += char;
       } else if (char === '(') {
         const opts = readOptions();
         sequence.push(opts);        
@@ -158,7 +176,7 @@ function createReader(text, startIndex = 0) {
     }
     
     log.pop(`~s ${si}`,sequence, text[index]);
-    return sequence;
+    return {type: 'sequence', values: sequence};
   }
 
   function readOptions() {
@@ -190,7 +208,7 @@ function createReader(text, startIndex = 0) {
     }
 
     log.pop(`~o ${si}`, sequences, text[index]);
-    return sequences;
+    return {type: 'options', choices: sequences};
   }
 
   return {
@@ -201,12 +219,42 @@ function createReader(text, startIndex = 0) {
   };
 }
 
+function minLengthOf(token) {
+  if (typeof token === 'string') return token === '' ? 0 : 1;
+  
+  if (token.type === 'sequence') {
+    return token.values.reduce((sum, v) => sum + minLengthOf(v), 0);
+  }
+
+  if (token.type === 'options') {
+    return minOf(token.choices, v => minLengthOf(v));    
+  }
+  throw new Error('boom');  
+}
+
+function maxLengthOf(token) {
+  if (typeof token === 'string') return token === '' ? 0 : 1;
+  
+  if (token.type === 'sequence') {
+    return token.values.reduce((sum, v) => sum + maxLengthOf(v), 0);
+  }
+
+  if (token.type === 'options') {
+    return maxOf(token.choices, v => maxLengthOf(v));    
+  }
+  throw new Error('boom');  
+}
+
+let nextId = 0;
 function createRoom(x, y) {
   return {
-    get key() {return `${x},${y}`;},
+    id: nextId++,
+    get key() {return keyOf(x, y);},
     x,
     y,
-    doors: {}
+    doors: {},
+    paths: [],
+    path: ''
   };
 }
 
@@ -220,43 +268,99 @@ function add(l, r) {
   };
 }
 
-function createMap(tokenList) {
+function createMap(initialToken) {
   const start = createRoom(0, 0);
   const cache = new Map();  
+  cache.set(start.key, start);
 
   function move(room, dir) {
+    if (!dir) return room;
+    
     const newPos = add(room, OFFSET[dir]);
-    const key = keyOf(newPos);
+    const key = keyOf(newPos.x, newPos.y);
     
     let next = cache.get(key);
     if (!next) {
+      log('create', newPos, key);
       next = createRoom(newPos.x, newPos.y);
+      next.path = room.path ?? '';
       cache.set(next.key, next);
-    }
-
+    }    
     room.doors[dir] = next;
     next.doors[oppositeOf(dir)] = room;
+
+    log('move', room.key.padStart(6), dir, next.key, Object.keys(room.doors), Object.keys(next.doors));
+
+    next.path += dir;
+    next.paths.push((room.path ?? '') + dir);
     return next;
   }
 
-  const queue = [{room: start, tokens: tokenList}];
-  while(queue.length > 0) {
-    const {room, tokens} = queue.pop();
+  function appendSequence(room, sequence) {
+    
+    let rooms = [room];
+    for(let m of sequence.values) {      
+      if (typeof m === 'string') {
+        for(let i = 0; i < rooms.length; i++) {
+          rooms[i] = move(rooms[i], m);
+        }
+      } else if (m.type === 'options') {
+        let newRooms = [];
+        for (let i = 0; i < rooms.length; i++) {
+          newRooms.push(...appendOptions(rooms[i], m));
+        }
+        rooms = newRooms;
+      }      
+    }
+    return rooms;
+  }
 
-    let cur = room;
-    // log('m', cur.key, tokens);
-    for(let t of tokens) {
-      if (typeof t === 'string') {
-        if (t === '(') log('m', cur.key, tokens);
-        const next = move(cur, t);
-        log(`move ${cur.key} -> ${next.key} [${t}]`);
-        cur = next;
-      } else {
-        queue.push({room: cur, tokens: t});
+  function appendOptions(room, option) {    
+    let newRooms = [];    
+    for(let m of option.choices) {
+      if (m.type === 'sequence') {                
+        newRooms.push(...appendSequence(room, m));        
+      } else if (m.type === 'options') {                
+        newRooms.push(...appendOptions(room, m));        
       }
     }
+    
+    return newRooms;
   }
-  return start;
+
+  return {
+    start,
+    nodes: appendSequence(start, initialToken),
+    cache
+  };
+
+  // const queue = [{room: start, token: initialToken}];
+  // while(queue.length > 0) {
+  //   const {room, token} = queue.pop();
+
+  //   if (token.type === 'sequence') {
+  //     for(let t of token.values) {
+
+  //     }
+  //   }
+
+
+  //   // let cur = room;
+  //   // log('m', cur.key, tokens);
+  //   // for(let t of tokens) {
+  //   //   if (typeof t === 'string') {
+  //   //     if (t === '(') log('m', cur.key, tokens);
+  //   //     const next = move(cur, t);
+  //   //     log(`move ${cur.key} -> ${next.key} [${t}]`);
+  //   //     cur = next;
+  //   //   } else {
+  //   //     for(let ta of t) {
+  //   //       queue.push({room: cur, tokens: ta});
+  //   //     }
+  //   //   }
+  //   // }
+  // }
+  // return start;
 }
 
 // function gen(text, startIndex = 0) {
