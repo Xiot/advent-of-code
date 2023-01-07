@@ -1,12 +1,22 @@
 
 import { autoParse, log, byLine, maybeNumber } from "../../utils";
+import {calc} from './calc';
 
 export const parse = byLine(line => {
   const [op, a, b, c] = line.split(' ').map(maybeNumber);
   return {op, a,b,c, inputs: [a,b,c]};
 });
 
+// 16773710 - too high
+// 14045034 - too high
+// 11600695 - too low
+// 13728745 - wrong
+export function part3(input) {
+  calc(0);
+}
+
 // 11578381 - high (33 ticks)
+// 9566170 - correct
 export function part1(input) {
   
   const cpu = createCpu([0, 0, 0, 0, 0, 0]);
@@ -25,20 +35,17 @@ export function part1(input) {
     cpu.execute(ins);
     
     if (ip >= 28) {
-      return cpu.registers[4];
-      // log(
-      //   pad4(ticks), 
-      //   pad4(ip + 2), 
-      //   pad4(cpu.ip), 
-      //   '|',
-      //   cpu.registers.map(x => String(x).padStart(14)).join('')
-      // );
-      // if (ip === 30) {
-      //   halt = false;
-      //   break;
-      // }      
+      return cpu.registers[4];            
     }
+
     if (ticks % 1000 === 0) log(ticks);
+    log(
+      pad4(ticks), 
+      pad4(ip + 2), 
+      pad4(cpu.ip), 
+      '|',
+      cpu.registers.map(x => String(x).padStart(14)).join('')
+    );
   }
   log('halted', halt);
   return cpu.registers[0];
@@ -48,6 +55,7 @@ export function part1(input) {
 // 16773710 - too high
 // 14045034 - too high
 // 11600695 - too low
+// 13728745 - wrong
 export function part2(input) {
 
   const cpu = createCpu([0, 0, 0, 0, 0, 0]);
