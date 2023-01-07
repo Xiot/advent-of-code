@@ -20,11 +20,11 @@ export function part1(input) {
     visualizeGrid(grid, (x, y) => grid.get(x, y) ?? '#')
   );
   
-  const e = cache.get('1,0');
-  log(e);
+  // const e = cache.get('1,0');
+  // log(e);
 
-  // const farthest = findFarthestRoom(node);
-  // return farthest;
+  const farthest = findFarthestRoom(start);
+  return farthest;
 }
 
 function findFarthestRoom(start) {
