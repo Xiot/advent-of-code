@@ -1,30 +1,44 @@
 
-import { autoParse, log, createGridMap, visualizeGrid, maxOf, minOf } from "../../utils";
+import { log, createGridMap, visualizeGrid } from "../../utils";
 
-export const parse = parseInput;
+export const parse = text => text.slice(1, -1);
 
 export function part1(input) {  
   const reader = createReader(input);
   const tokens = reader.read();
-  // log(tokens);
   
-  // return minLengthOf(tokens);
-  // return maxLengthOf([ [ 'N', 'E', 'W', 'S' ], [ '' ] ]);
-  
-  // return; 
-  const {start, nodes, cache} = createMap(tokens);  
+      
+  const {start} = createMapIterative(tokens);
   const grid = createGrid(start);
   
   grid.set(start.x*2, start.y*2, 'X');
   console.log(
     visualizeGrid(grid, (x, y) => grid.get(x, y) ?? '#')
   );
-  
-  // const e = cache.get('1,0');
-  // log(e);
-
+    
   const farthest = findFarthestRoom(start);
   return farthest;
+}
+
+function findRoomsFurtherThan(start, target) {
+  let count = 0;
+  const queue = [{node: start, distance: 0}];
+  const visited = new Map();
+  visited.set(start.key, true);
+
+  while(queue.length > 0) {
+    const {node, distance} = queue.shift();
+    if (distance >= target) {
+      count++;
+    }
+
+    Object.entries(node.doors).forEach(([dir, room]) => {
+      if (visited.has(room.key)) return;
+      visited.set(room.key, true);
+      queue.push({node: room, distance: distance + 1});
+    });
+  }
+  return count;
 }
 
 function findFarthestRoom(start) {
@@ -81,7 +95,20 @@ function createGrid(node) {
 }
 
 export function part2(input) {
-
+  const reader = createReader(input);
+  const tokens = reader.read();
+  log(tokens);
+  
+  
+  const {start} = createMapIterative(tokens);
+  const grid = createGrid(start);
+  
+  grid.set(start.x*2, start.y*2, 'X');
+  console.log(
+    visualizeGrid(grid, (x, y) => grid.get(x, y) ?? '#')
+  );
+    
+  return findRoomsFurtherThan(start, 1000);  
 }    
 
 /*
@@ -115,16 +142,9 @@ const OFFSET = {
   W: {x: -1, y: 0}
 };
 function isDirection(letter) {
+  if (typeof letter !== 'string') return false;
   return DIRS.includes(letter);
 }
-
-function parseInput(text) {
-  text = text.slice(1, -1);
-  log(text);
-  return text;
-}
-
-// (EEENWNW
 
 function createReader(text, startIndex = 0) {
   let index = startIndex;
@@ -217,9 +237,7 @@ function createRoom(x, y) {
     get key() {return keyOf(x, y);},
     x,
     y,
-    doors: {},
-    paths: [],
-    path: ''
+    doors: {},    
   };
 }
 
@@ -233,7 +251,7 @@ function add(l, r) {
   };
 }
 
-function createMap(initialToken) {
+function createMapIterative(initialToken) {
   const start = createRoom(0, 0);
   const cache = new Map();  
   cache.set(start.key, start);
@@ -245,104 +263,62 @@ function createMap(initialToken) {
     const key = keyOf(newPos.x, newPos.y);
     
     let next = cache.get(key);
-    if (!next) {
-      // log('create', newPos, key);
+    if (!next) {      
       next = createRoom(newPos.x, newPos.y);
-      next.path = room.path ?? '';
       cache.set(next.key, next);
     }    
     room.doors[dir] = next;
     next.doors[oppositeOf(dir)] = room;
-
-    // log('move', room.key.padStart(6), dir, next.key, Object.keys(room.doors), Object.keys(next.doors));
-
-    next.path += dir;
-    next.paths.push((room.path ?? '') + dir);
+    
     return next;
   }
 
-  function appendSequence(room, sequence) {
-    
-    let rooms = [room];
-    for(let m of sequence.values) {      
-      if (typeof m === 'string') {
-        for(let i = 0; i < rooms.length; i++) {
-          rooms[i] = move(rooms[i], m);
-        }
-      } else if (m.type === 'options') {
-        let newRooms = [];
-        for (let i = 0; i < rooms.length; i++) {
-          newRooms.push(...appendOptions(rooms[i], m));
-        }
-        rooms = newRooms;
-      }      
-    }
-    return rooms;
-  }
+  const queue = [{
+    room: start, 
+    token: initialToken, 
+    offset: 0, 
+    onComplete: null,
+  }];
 
-  function appendOptions(room, option) {    
-    let newRooms = [];    
-    for(let m of option.choices) {
-      if (m.type === 'sequence') {                
-        newRooms.push(...appendSequence(room, m));        
-      } else if (m.type === 'options') {                
-        newRooms.push(...appendOptions(room, m));        
+  while(queue.length > 0) {
+    const {room, token, offset, onComplete} = queue.shift();
+
+    if (token.type === 'sequence') {
+      if (offset >= token.values.length) {
+        onComplete?.(room);
+        continue;
+      };
+
+      const next = token.values[offset];
+      if (next === '') continue;
+      if (isDirection(next)) {
+        queue.push({
+          room: move(room, next),
+          token,
+          offset: offset + 1,
+          onComplete
+        });
+      } else if (next.type === 'options') {
+        for(let o of next.choices) {
+          queue.push({
+            room,
+            token: o,
+            offset: 0,
+            onComplete(r) {              
+              queue.push({
+                room: r,
+                token,
+                offset: offset + 1
+              });
+            }
+          });
+        }
       }
     }
-    
-    return newRooms;
   }
-
+  
   return {
-    start,
-    nodes: appendSequence(start, initialToken),
+    start,    
     cache
   };
-
 }
-
-// function gen(text, startIndex = 0) {
-//   let index = startIndex;
-
-
-//   function readSequence() {
-
-//     if (text[index] === ')') return '';
-
-//     let sequence = [text[index]];
-//     while(index < text.length - 1) {
-//       const char = text[++index];
-//       if (isDirection(char)) {        
-//         sequence.push(char);
-//       } else if (char === '(') {        
-//         sequence.push(readOptions());
-//         break;
-//       } else if (char === '|') {
-//         break;
-//       }
-//     }
-//     return sequence;
-//   }
-
-//   function readOptions() {
-//     let sequences = [];
-//     if (text[index] !== '(') 
-//       throw new Error(`Expected '(' at ${index}. Found ${text[index]})`);
-
-//     while(true) {
-//       let char = text[++index];      
-//       if (char === ')') break; 
-//       if (char === '|') index++;     
-//       sequences.push(readSequence());
-//       if (index >= text.length - 1 ) break;
-//     }
-//     return sequences;
-//   }
-
-//   return {
-//     get index() {return index;},
-//     read() {
-//       return readSequence();      
-//     }
-//   };
-// }
