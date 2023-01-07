@@ -6,7 +6,7 @@ export const parse = parseInput;
 export function part1(input) {  
   const reader = createReader(input);
   const tokens = reader.read();
-  log(tokens);
+  // log(tokens);
   
   // return minLengthOf(tokens);
   // return maxLengthOf([ [ 'N', 'E', 'W', 'S' ], [ '' ] ]);
@@ -128,19 +128,19 @@ function parseInput(text) {
 
 function createReader(text, startIndex = 0) {
   let index = startIndex;
-  log(text);
+  // log(text);
 
   function readSequence() {
     let si = index;
-    log.push('s', index, text[index]);
+    // log.push('s', index, text[index]);
     
     if (text[index] === ')') {
-      log.pop(`~s ${si}`, [''], text[index]);
+      // log.pop(`~s ${si}`, [''], text[index]);
       return {type: 'sequence', values: ['']};
     }
     if (text[index] === '(') {
       const opts = readOptions();
-      log.pop(`~s ${si}`, opts, text[index]);
+      // log.pop(`~s ${si}`, opts, text[index]);
       return opts;
     }
     
@@ -148,34 +148,25 @@ function createReader(text, startIndex = 0) {
     while(index < text.length) {
       const char = text[index];
       if (isDirection(char)) {
-
-        // let s = '';
-        // while(index < text.length && isDirection(text[index])) {
-        //   s += text[index];
-        //   index++;
-        // }
-        // sequence.push(s);
-        // continue;
-
         sequence.push(char);
-        // sequence += char;
+
       } else if (char === '(') {
         const opts = readOptions();
         sequence.push(opts);        
-      } else if (char === '|') {
-        // index++;
-        // continue;
+
+      } else if (char === '|') {        
         break;
-      } else if (char === ')') {
-        // index++;
+
+      } else if (char === ')') {        
         break;
+
       } else {
         throw new Error('boom');
       }
       index++;
     }
     
-    log.pop(`~s ${si}`,sequence, text[index]);
+    // log.pop(`~s ${si}`,sequence, text[index]);
     return {type: 'sequence', values: sequence};
   }
 
@@ -185,13 +176,13 @@ function createReader(text, startIndex = 0) {
     if (text[index] !== '(') 
       throw new Error(`Expected '(' at ${index}. Found ${text[index]})`);
     
-    log.push('o', si, text[index]);
+    // log.push('o', si, text[index]);
 
     // move past (
     index++;
     while(index < text.length) {
       let char = text[index];
-      log('ro', index, char);
+      // log('ro', index, char);
 
       const s = readSequence();
       sequences.push(s);
@@ -207,7 +198,7 @@ function createReader(text, startIndex = 0) {
       index++;
     }
 
-    log.pop(`~o ${si}`, sequences, text[index]);
+    // log.pop(`~o ${si}`, sequences, text[index]);
     return {type: 'options', choices: sequences};
   }
 
@@ -217,32 +208,6 @@ function createReader(text, startIndex = 0) {
       return readSequence();      
     }
   };
-}
-
-function minLengthOf(token) {
-  if (typeof token === 'string') return token === '' ? 0 : 1;
-  
-  if (token.type === 'sequence') {
-    return token.values.reduce((sum, v) => sum + minLengthOf(v), 0);
-  }
-
-  if (token.type === 'options') {
-    return minOf(token.choices, v => minLengthOf(v));    
-  }
-  throw new Error('boom');  
-}
-
-function maxLengthOf(token) {
-  if (typeof token === 'string') return token === '' ? 0 : 1;
-  
-  if (token.type === 'sequence') {
-    return token.values.reduce((sum, v) => sum + maxLengthOf(v), 0);
-  }
-
-  if (token.type === 'options') {
-    return maxOf(token.choices, v => maxLengthOf(v));    
-  }
-  throw new Error('boom');  
 }
 
 let nextId = 0;
@@ -281,7 +246,7 @@ function createMap(initialToken) {
     
     let next = cache.get(key);
     if (!next) {
-      log('create', newPos, key);
+      // log('create', newPos, key);
       next = createRoom(newPos.x, newPos.y);
       next.path = room.path ?? '';
       cache.set(next.key, next);
@@ -289,7 +254,7 @@ function createMap(initialToken) {
     room.doors[dir] = next;
     next.doors[oppositeOf(dir)] = room;
 
-    log('move', room.key.padStart(6), dir, next.key, Object.keys(room.doors), Object.keys(next.doors));
+    // log('move', room.key.padStart(6), dir, next.key, Object.keys(room.doors), Object.keys(next.doors));
 
     next.path += dir;
     next.paths.push((room.path ?? '') + dir);
@@ -334,33 +299,6 @@ function createMap(initialToken) {
     cache
   };
 
-  // const queue = [{room: start, token: initialToken}];
-  // while(queue.length > 0) {
-  //   const {room, token} = queue.pop();
-
-  //   if (token.type === 'sequence') {
-  //     for(let t of token.values) {
-
-  //     }
-  //   }
-
-
-  //   // let cur = room;
-  //   // log('m', cur.key, tokens);
-  //   // for(let t of tokens) {
-  //   //   if (typeof t === 'string') {
-  //   //     if (t === '(') log('m', cur.key, tokens);
-  //   //     const next = move(cur, t);
-  //   //     log(`move ${cur.key} -> ${next.key} [${t}]`);
-  //   //     cur = next;
-  //   //   } else {
-  //   //     for(let ta of t) {
-  //   //       queue.push({room: cur, tokens: ta});
-  //   //     }
-  //   //   }
-  //   // }
-  // }
-  // return start;
 }
 
 // function gen(text, startIndex = 0) {
