@@ -1,4 +1,3 @@
-require('@babel/register');
 require('dotenv').config();
 
 const { args } = require('./scripts/utils');
@@ -15,7 +14,7 @@ const commands = {
     await initialize(year, day);
     await download(year, day);
     await watch(year, day);
-  }
+  },
 };
 
 const [name, year, day, ...rest] = args();
