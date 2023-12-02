@@ -2,12 +2,14 @@ import { log, byLine } from '../../utils';
 
 const GEM_RE = /(\d+) ([a-z]+)/i;
 
+type RGB = { red?: number; green?: number; blue?: number };
+
 export const parse = byLine(line => {
   const lineParts = line.split(':').map(x => x.trim());
   const game = parseInt(lineParts[0].slice(5));
 
   const roundsText = lineParts[1].split(';');
-  const rounds = [];
+  const rounds: RGB[] = [];
   for (const roundText of roundsText) {
     const parts = roundText.split(',');
     rounds.push(
@@ -15,7 +17,7 @@ export const parse = byLine(line => {
         const m = GEM_RE.exec(x);
         acc[m[2]] = parseInt(m[1]);
         return acc;
-      }, {}),
+      }, {} as RGB),
     );
   }
   return {

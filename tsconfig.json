@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "esnext",
+        "lib": [
+            "esnext"
+        ],
+        
+        "noImplicitAny": false,
+        "allowJs": true,
+        "noEmit": true
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}
