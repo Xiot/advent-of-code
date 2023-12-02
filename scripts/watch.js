@@ -1,17 +1,11 @@
-const chokidar = require('chokidar');
-const { fork } = require('child_process');
-const { debounce } = require('lodash');
 const path = require('path');
+const { watch: nodeWatch } = require('node:fs');
 
 const { waitForKey } = require('../utils/io');
-const { buildFilename, solutionPath } = require('./utils');
-
+const { solutionPath } = require('./utils');
 
 module.exports = {
   async watch(year, day) {
-
-    const filename = buildFilename(year, day, 'index.js');
-
     let part = 1;
     let inputName = 'sample.txt';
     let debug = true;
@@ -23,74 +17,71 @@ module.exports = {
     });
 
     function launch(year, day, part, inputName) {
-      
       if (currentChild) {
         if (currentChild.exitCode === null) {
           currentChild.kill();
         }
-      }      
-      
+      }
+
       let questionResult = null;
       let hasOutput = false;
 
-      const child = fork('./scripts/launch.js', [year, day, part, inputName], {
-        stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+      const child = Bun.spawn({
+        cmd: ['bun', './scripts/launch.js', year, day, part, inputName],
+        stdio: ['ignore', 'pipe', 'pipe'],
         env: {
-          ...process.env, 
+          ...process.env,
           DEBUG: debug ? '1' : '0',
           SOLUTION_PATH: path.join(process.cwd(), solutionPath(year, day)),
           SOLUTION_OUTPUT_PATH: path.join(process.cwd(), solutionPath(year, day), 'output'),
           AOC_INPUT: path.join(process.cwd(), solutionPath(year, day), inputName),
           IS_SAMPLE: inputName === 'sample.txt' ? 1 : 0,
-        }
-      });      
-
-      child.on('spawn', () => {
-        console.log(`\n${year} ${String(day).padStart(2, '0')} - ${inputName}\n${'='.repeat(30)}`);
+        },
+        ipc(message, channel) {
+          questionResult = message;
+        },
+        onExit(channel, code, signal) {
+          if (signal === 'SIGTERM') {
+            console.log('SIGTERM');
+            return;
+          }
+          hasOutput && console.log('='.repeat(30));
+          if (questionResult) {
+            console.log(
+              `${formatDuration(questionResult.duration)} Part ${'I'.repeat(part)}: ${questionResult.result}`,
+            );
+          } else {
+            console.log(`Part ${'I'.repeat(part)}: no output`);
+          }
+        },
       });
 
-      child.on('message', result => {        
-        questionResult = result;
+      const os = new WritableStream({
+        start() {
+          console.log(`\n${year} ${String(day).padStart(2, '0')} - ${inputName}\n${'='.repeat(30)}`);
+        },
+        write(chunk) {
+          if (!debug) return;
+          hasOutput = true;
+          process.stdout.write(chunk);
+        },
       });
+      child.stdout.pipeTo(os);
 
-      child.stdout.on('data', data => {        
-        if (!debug) return;
-        hasOutput = true;
-        process.stdout.write(data);
-      });
-
-      child.stderr.on('data', data => process.stderr.write(data));
-      child.on('close', (code, signal) => {
-        if (signal === 'SIGTERM') {
-          console.log('SIGTERM');
-          return;
-        }
-        hasOutput && console.log('='.repeat(30));
-        if (questionResult) {
-          console.log(`${formatDuration(questionResult.duration)} Part ${'I'.repeat(part)}: ${questionResult.result}`);
-        } else {
-          console.log(`Part ${'I'.repeat(part)}: no output`);
-        }
-      });
       currentChild = child;
       return child;
     }
 
-    const watcher = chokidar.watch(filename, {
-      persistent: true,
-      atomic: true
-    });
-    
-    watcher.on('change', debounce(() => {
+    const watcher = nodeWatch(solutionPath(year, day), (event, filename) => {
+      if (event !== 'change') return;
       launch(year, day, part, inputName);
-    }, 1000, {leading: false, trailing: true}));
-
-    launch(year, day, part, inputName);
+    });
 
     console.log('s = sample, i = input, 1 = part1, 2 = part2, d = debug, k = kill, q = quit');
-    while (true) {      
-      const key = (await waitForKey()).name;
+    launch(year, day, part, inputName);
 
+    while (true) {
+      const key = (await waitForKey()).name;
       if (currentChild) {
         currentChild.kill();
         currentChild = null;
@@ -98,7 +89,7 @@ module.exports = {
 
       if (key === 'q') break;
       if (key === 'k') continue;
-      
+
       if (key === 's') {
         debug = true;
         inputName = 'sample.txt';
@@ -125,6 +116,9 @@ module.exports = {
     }
 
     watcher.close();
+
+    // something is preventing the process from exiting
+    process.exit(0);
   },
 };
 

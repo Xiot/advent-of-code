@@ -16,10 +16,9 @@ export function prompt(query) {
   );
 }
 
-export function waitForKey() {  
-  readline.emitKeypressEvents(process.stdin);
-  if (process.stdin.isTTY)
-    process.stdin.setRawMode(true);
+readline.emitKeypressEvents(process.stdin);
+export function waitForKey() {
+  if (process.stdin.isTTY) process.stdin.setRawMode(true);
 
   return new Promise(resolve => {
     const listener = (str, key) => {
@@ -30,19 +29,18 @@ export function waitForKey() {
         process.exit();
       }
       resolve(key);
-      process.stdin.pause();
     };
 
-    process.stdin.on('keypress', listener).resume();
+    process.stdin.on('keypress', listener);
   });
 }
 
-const OUTPUT_FOLDER = process.env.SOLUTION_OUTPUT_PATH 
-  || path.join(process.env.SOLUTION_PATH || process.cwd(), './output');
-  
+const OUTPUT_FOLDER =
+  process.env.SOLUTION_OUTPUT_PATH || path.join(process.env.SOLUTION_PATH || process.cwd(), './output');
+
 export function clearOutputPath() {
-  if (fs.existsSync(OUTPUT_FOLDER)) {    
-    fs.rmSync(OUTPUT_FOLDER, {force: true, recursive: true});
+  if (fs.existsSync(OUTPUT_FOLDER)) {
+    fs.rmSync(OUTPUT_FOLDER, { force: true, recursive: true });
   }
   fs.mkdirSync(OUTPUT_FOLDER);
 }

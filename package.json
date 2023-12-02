@@ -6,14 +6,15 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "prep": "node ./scripts/init.js",
-    "aoc": "node ./index.js",
-    "scratch": "node --require @babel/register ./scratch.js"
+    "prep": "bun ./scripts/init.js",
+    "aoc": "bun ./index.js",
+    "scratch": "bun --watch ./scratch.ts"
   },
   "dependencies": {
     "@babel/plugin-transform-runtime": "^7.16.4",
     "babel-node": "^0.0.1-security",
     "babel-register": "^6.26.0",
+    "bun-types": "^1.0.15",
     "chalk": "^5.0.0",
     "chokidar": "^3.5.2",
     "clipboardy": "^2.3",

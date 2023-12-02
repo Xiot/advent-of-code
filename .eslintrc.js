@@ -4,11 +4,13 @@ module.exports = {
     es6: true,
     node: true,
     es2020: true,
+    esnext: true,
   },
   extends: ['eslint:recommended', 'prettier'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
+    Bun: 'readonly',
   },
   parserOptions: {
     ecmaVersion: 2020,

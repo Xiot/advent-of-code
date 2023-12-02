@@ -1,4 +1,4 @@
-import { autoParse, log, byLine } from '../../utils';
+import { log, byLine } from '../../utils';
 
 const GEM_RE = /(\d+) ([a-z]+)/i;
 
