@@ -6,16 +6,16 @@ const fs = require('fs');
 const process = require('process');
 
 const clipboard = require('clipboardy');
-const { buildFilename, args } = require('./utils');
+const { buildFilename, args, solutionPath } = require('./utils');
 
 const [year, day, part, inputName] = args();
 
-const filename = buildFilename(year, day, 'index.js');
-const question = require('../' + filename);
+const question = getQuestion(year, day);
+const exportKeys = Object.keys(question);
 
-const exportKeys = Object.keys(Object.getPrototypeOf(question));
 // If there are no exports then just quit.
 if (exportKeys.length === 0) {
+  console.error('no exports', question);
   process.exit(1);
 }
 
@@ -60,4 +60,21 @@ function copy(value) {
       }
     });
   });
+}
+
+function getQuestion(year, day) {
+  try {
+    const importPath = solutionPath(year, day);
+    const raw = require(`../${importPath}`);
+    const root = 'default' in raw ? raw.default : raw;
+
+    return {
+      parse: root.parse,
+      part1: root.part1,
+      part2: root.part2,
+    };
+  } catch (ex) {
+    console.log('Failed to import', ex);
+    process.exit(1);
+  }
 }
