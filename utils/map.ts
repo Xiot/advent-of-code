@@ -6,7 +6,7 @@ function assertPosition(x: number, y: number) {
   }
 }
 
-type BoundingBox = {
+export type BoundingBox = {
   readonly left: number;
   readonly top: number;
   readonly right: number;
@@ -15,13 +15,13 @@ type BoundingBox = {
   readonly zMax: number;
 };
 
-type Dimensions = {
+export type Dimensions = {
   readonly width: number;
   readonly height: number;
   readonly depth: number;
 };
 
-type Bounds = BoundingBox &
+export type Bounds = BoundingBox &
   Dimensions & {
     toJSON(): BoundingBox & Dimensions;
     valueOf(): BoundingBox;
