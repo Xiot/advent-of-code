@@ -123,5 +123,5 @@ module.exports = {
 };
 
 function formatDuration(ms) {
-  return `[${String(ms).padStart(5)}]`;
+  return `[${ms.toFixed(2).padStart(8)}]`;
 }

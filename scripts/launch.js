@@ -31,10 +31,10 @@ const rawInput = fs.readFileSync(buildFilename(year, day, inputName), 'utf-8');
 
 const input = question.parse?.(rawInput) ?? rawInput;
 
-const startTime = Date.now();
+const startTime = performance.now();
 const fn = question[`part${part}`];
 Promise.resolve(fn?.(input)).then(async result => {
-  const duration = Date.now() - startTime;
+  const duration = performance.now() - startTime;
 
   if (result != null) {
     const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
