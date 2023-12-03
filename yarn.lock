@@ -117,6 +117,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4.14.202":
+  version: 4.14.202
+  resolution: "@types/lodash@npm:4.14.202"
+  checksum: a91acf3564a568c6f199912f3eb2c76c99c5a0d7e219394294213b3f2d54f672619f0fde4da22b29dc5d4c31457cd799acc2e5cb6bd90f9af04a1578483b6ff7
+  languageName: node
+  linkType: hard
+
 "@types/node-fetch@npm:2":
   version: 2.6.2
   resolution: "@types/node-fetch@npm:2.6.2"
@@ -170,6 +177,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "advent-of-code@workspace:."
   dependencies:
+    "@types/lodash": ^4.14.202
     "@types/node-fetch": 2
     bun-types: ^1.0.15
     chalk: ^5.0.0

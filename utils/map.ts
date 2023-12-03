@@ -214,7 +214,7 @@ export function createGridMap(defaultValue: string | ((x: number, y: number) => 
     get bounds() {
       return bounds;
     },
-    recalculateBounds() {
+    recalculateBounds(this: GridMap) {
       const keys = Array.from(this.keys());
       bounds = createBounds({
         left: minOf(keys, k => k.x),

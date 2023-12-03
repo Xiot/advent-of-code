@@ -24,6 +24,7 @@
     "open": "^8.4.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
     "@types/node-fetch": "2",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
