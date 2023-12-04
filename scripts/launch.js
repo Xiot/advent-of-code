@@ -33,16 +33,20 @@ const input = question.parse?.(rawInput) ?? rawInput;
 
 const startTime = performance.now();
 const fn = question[`part${part}`];
-Promise.resolve(fn?.(input)).then(async result => {
-  const duration = performance.now() - startTime;
+Promise.resolve(fn?.(input))
+  .then(async result => {
+    const duration = performance.now() - startTime;
 
-  if (result != null) {
-    const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
+    if (result != null) {
+      const serialized = isObject(result) ? JSON.stringify(result, undefined, 2) : result;
 
-    await copy(String(serialized));
-    process.send?.({ result: serialized, duration });
-  }
-});
+      await copy(String(serialized));
+      process.send?.({ result: serialized, duration });
+    }
+  })
+  .catch(ex => {
+    console.log('ERROR', ex);
+  });
 
 const isWsl = require('is-wsl');
 function copy(value) {
