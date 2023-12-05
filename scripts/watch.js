@@ -41,6 +41,7 @@ module.exports = {
           questionResult = message;
         },
         onExit(channel, code, signal) {
+          console.log('exit', code, signal);
           if (signal === 'SIGTERM') {
             console.log('SIGTERM');
             return;
@@ -67,6 +68,13 @@ module.exports = {
         },
       });
       child.stdout.pipeTo(os);
+
+      const errorOut = new WritableStream({
+        write(chunk) {
+          process.stderr.write(chunk);
+        },
+      });
+      child.stderr.pipeTo(errorOut);
 
       currentChild = child;
       return child;
