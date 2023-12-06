@@ -41,11 +41,15 @@ module.exports = {
           questionResult = message;
         },
         onExit(channel, code, signal) {
-          console.log('exit', code, signal);
           if (signal === 'SIGTERM') {
             console.log('SIGTERM');
             return;
           }
+          if (code !== 0) {
+            console.log('exit', code, signal);
+            return;
+          }
+
           hasOutput && console.log('='.repeat(30));
           if (questionResult) {
             console.log(
