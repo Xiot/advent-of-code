@@ -36,6 +36,7 @@ module.exports = {
           SOLUTION_OUTPUT_PATH: path.join(process.cwd(), solutionPath(year, day), 'output'),
           AOC_INPUT: path.join(process.cwd(), solutionPath(year, day), inputName),
           IS_SAMPLE: inputName === 'sample.txt' ? 1 : 0,
+          PART: String(part),
         },
         ipc(message, channel) {
           questionResult = message;
