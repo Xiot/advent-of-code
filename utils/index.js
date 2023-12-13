@@ -13,3 +13,4 @@ export * from './data-structures';
 export * from './cube';
 export * from './template';
 export * from './types';
+export * from './function';
