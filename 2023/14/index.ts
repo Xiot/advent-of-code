@@ -61,14 +61,8 @@ export function part2(input: Input) {
 
     log(cycle, cache.get(state));
     prev = cache.get(state);
-
-    // if (cycle > 40) break;
   }
 
-  // const cycleSize = 9 - 3 + 1;
-  // offset = 10;
-  // first = 3;
-  // const cycleSize = (last - first) / 2;
   const target = ((1_000_000_000 - offset) % cycleSize) + first;
   log(target, offset, first, last, cycleSize);
 
