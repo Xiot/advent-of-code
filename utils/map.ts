@@ -275,6 +275,15 @@ export function createBucketMap<T>(keyFn: (item: T) => string) {
       }
       bucket.push(value);
     },
+    getBucketFor(item: T) {
+      const key = keyFn(item);
+      let bucket = cache.get(key);
+      if (bucket) return bucket;
+
+      bucket = [];
+      cache.set(key, bucket);
+      return bucket;
+    },
     values() {
       return cache.values();
     },
