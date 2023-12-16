@@ -18,6 +18,8 @@ export function visualizeGrid(
   render?: (x: number, y: number) => string,
   opts = { printRowNumbers: false, printColNumbers: false },
 ) {
+  if (process.env.DEBUG !== '1') return 'NOT DEBUG';
+
   render ??= (x, y) => ('get' in gridOrBounds ? gridOrBounds.get(x, y) : ' ');
 
   const lines = [];
