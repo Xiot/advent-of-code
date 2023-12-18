@@ -260,6 +260,9 @@ export function createGridMap(defaultValue: string | ((x: number, y: number) => 
       }
       return clone;
     },
+    get length() {
+      return cache.size;
+    },
   };
 }
 
@@ -328,4 +331,6 @@ export interface GridMap {
 
   clone(): GridMap;
   prune(bounds: BoundingBox): GridMap;
+
+  readonly length: number;
 }
