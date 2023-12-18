@@ -1,5 +1,6 @@
 import { minOf, maxOf } from './array';
-import { PriorityQueue } from './data-structures';
+import { MinHeap, PriorityQueue } from './data-structures';
+import { log } from './logging';
 import { Bounds, GridMap, loadGrid } from './map';
 
 export function* pointsWithin(gridOrBounds: GridMap | Bounds) {
@@ -62,26 +63,35 @@ export function findBounds(input, accessX = p => p[0], accessY = p => p[1]) {
   };
 }
 
-type AStarItem = {
+type AStarItem<T = unknown> = {
   score: number;
-  node: unknown;
+  node: T;
+  path: T[];
 };
 type AStarOptions = {
   mode: 'min' | 'max';
   debug: boolean;
 };
-export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, opt: Partial<AStarOptions>) {
+export function aStar<T = unknown>(
+  keyOf: (item: T) => string,
+  start: T,
+  atEndFn: (item: T) => boolean,
+  getNeighbors: (item: T, path: T[]) => T[],
+  costFn: (from: T, to: T) => number,
+  hueristicFn: (item: T) => number,
+  opt: Partial<AStarOptions> = { mode: 'min', debug: false },
+) {
   let costs = {};
   let backtrace = {};
-  let queue = new PriorityQueue<AStarItem>(item => item.score, opt?.mode ?? 'min');
+  let queue = new PriorityQueue<AStarItem<T>>(item => item.score);
 
   const costOf = node => costs[`${keyOf(node)}`] ?? Number.MAX_SAFE_INTEGER;
 
   costs[keyOf(start)] = 0;
-  queue.push({ node: start, score: 0 });
+  queue.push({ node: start, score: 0, path: [] });
 
   function collectPaths(node) {
-    let path = [node];
+    let path: T[] = [node];
     let lastPos = node;
     while (keyOf(lastPos) != keyOf(start)) {
       const prev = backtrace[keyOf(lastPos)];
@@ -90,24 +100,28 @@ export function aStar(keyOf, start, atEndFn, getNeighbors, costFn, hueristicFn, 
     }
     return path;
   }
-
+  let steps = 0;
   while (queue.length > 0) {
-    const { node, score } = queue.pop();
-    opt.debug && console.log(score, node);
+    steps++;
+    const { node, score, path } = queue.pop();
+
+    steps < 20 && opt.debug && console.log(score, node);
+    // if (steps >= 20) return null;
     if (atEndFn(node)) {
       return { node, score, path: collectPaths(node) };
     }
 
-    const neighbors = getNeighbors(node);
+    const neighbors = getNeighbors(node, path);
     neighbors.forEach(n => {
       const neighborCost = costOf(node) + costFn(node, n);
       if (neighborCost < costOf(n)) {
         costs[keyOf(n)] = neighborCost;
         backtrace[keyOf(n)] = node;
-        queue.push({ node: n, score: neighborCost + hueristicFn(n) });
+        queue.push({ node: n, score: neighborCost + hueristicFn(n), path: [...path, node] });
       }
     });
   }
+  log(steps);
   return null;
 }
 

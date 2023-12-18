@@ -1,3 +1,72 @@
+export class MinHeap<T> {
+  data: T[];
+  private priorityAccessor: (item: T) => number;
+
+  constructor(priorityAccessor: (item: T) => number) {
+    this.data = [];
+    this.priorityAccessor = priorityAccessor;
+  }
+
+  push(value: T) {
+    this.data.push(value);
+    if (this.data.length > 0) {
+      this.bubbleUp(this.data.length - 1);
+    }
+  }
+
+  pop() {
+    const value = this.data[0];
+    this.data[0] = this.data[this.data.length - 1];
+    this.data.pop();
+    this.bubbleDown(0);
+    return value;
+  }
+  get length() {
+    return this.data.length;
+  }
+
+  private bubbleUp(index) {
+    const value = this.priorityAccessor(this.data[index]);
+
+    while (true) {
+      let parentIndex = Math.floor((index - 1) / 2);
+      if (parentIndex < 0) return;
+
+      const parent = this.data[parentIndex];
+      if (this.priorityAccessor(parent) <= value) {
+        return;
+      }
+
+      swap(this.data, index, parentIndex);
+      index = parentIndex;
+    }
+  }
+  private bubbleDown(index: number) {
+    while (2 * index + 1 < this.data.length) {
+      const value = this.data[index];
+      const valueOrder = this.priorityAccessor(value);
+      const leftIndex = 2 * index + 1;
+      const rightIndex = 2 * index + 2;
+      const left = this.data[leftIndex];
+      const right = this.data[rightIndex];
+      const leftOrder = this.priorityAccessor(left);
+      const rightOrder = right == null ? Number.MAX_SAFE_INTEGER : this.priorityAccessor(right);
+
+      const smallerIndex = leftOrder <= rightOrder ? leftIndex : rightIndex;
+
+      if (valueOrder < leftOrder && valueOrder < rightOrder) break;
+
+      swap(this.data, index, smallerIndex);
+      index = smallerIndex;
+    }
+  }
+}
+function swap<T>(arr: T[], l: number, r: number) {
+  let temp = arr[l];
+  arr[l] = arr[r];
+  arr[r] = temp;
+}
+
 // TODO: Should be done with a heap
 export class PriorityQueue<T> {
   private data: T[];
@@ -12,10 +81,10 @@ export class PriorityQueue<T> {
 
   push(value: T) {
     this.data.push(value);
-    this.sort();
   }
 
   pop(): T {
+    this.sort();
     return this.data.shift();
   }
 
