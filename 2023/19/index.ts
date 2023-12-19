@@ -89,16 +89,37 @@ type VariableRanges = Record<Variable, Range[]>;
 type VariableRange = Record<Variable, Range>;
 
 export function part2(input: Input) {
-  // const ret = intersectionRanges([
-  //   { min: 1, max: 1800 },
-  //   { min: 839, max: 4000 },
-  // ]);
-  // log(ret);
+  // const target = input.workflows.find(x => x.name === 'qh');
+  // const ranges = findPossibleRanges(target);
+  // log(ranges);
   // return 0;
 
   const start = input.workflows.find(x => x.name === 'in')!;
   const ret = processChain(start, input.workflows);
-  log(ret);
+
+  // log(ret.filter(r => r.path.includes('qh')));
+
+  let offset = 0;
+  for (let i = 0; i < ret.length; i++) {
+    const l = ret[i].condition;
+    for (let j = i + 1; j < ret.length - 1; j++) {
+      const r = ret[j].condition;
+      const re = conditionOverlap(l, r);
+      if (re != null) {
+        const local = score(re);
+        log(i, j, local);
+        offset += local;
+      }
+    }
+  }
+
+  function score(range: VariableRange) {
+    function get(variable: Variable) {
+      return range[variable].max - range[variable].min + 1;
+    }
+
+    return get('x') * get('m') * get('a') * get('s');
+  }
 
   function count(ret: VariableRanges) {
     function get(variable: Variable) {
@@ -109,9 +130,35 @@ export function part2(input: Input) {
     return get('x') * get('m') * get('a') * get('s');
   }
 
+  // function keyOf(range: VariableRanges) {
+  //   function k(variable: Variable) {
+  //     const v = range[variable];
+  //     return `${v[0].min},${v[0].max}`;
+  //   }
+  //   return [k('x'), k('m'), k('a'), k('s')].join('|');
+  // }
+  // const distinct = new Set<string>();
+  // for (const r of ret) {
+  //   distinct.add(keyOf(r.condition));
+  // }
+  // return distinct.size;
+
   log(ret.length);
   const total = sumOf(ret, r => count(r.condition));
-  return total;
+  log('total ', String(total).padStart(15));
+  log('offset', String(offset).padStart(15));
+  log('result', String(total - offset).padStart(15));
+  return total - offset;
+}
+
+function conditionOverlap(left: VariableRanges, right: VariableRanges) {
+  const x = getOverlap(left.x[0], right.x[0]).overlap;
+  const m = getOverlap(left.m[0], right.m[0]).overlap;
+  const a = getOverlap(left.a[0], right.a[0]).overlap;
+  const s = getOverlap(left.s[0], right.s[0]).overlap;
+  if (!x || !m || !a || !s) return null;
+  // log(x, m, a, s);
+  return { x, m, a, s };
 }
 
 type State = {
