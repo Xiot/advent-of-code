@@ -162,20 +162,42 @@ export function part2(input: Input) {
     return { queue: newQueue, maxLength };
   }
 
+  function findLongerPaths(pos: Point, length: number) {
+    if (paths.length === 0) return [];
+    return paths.filter(p => {
+      const l = p.visited.get(keyOf(pos));
+      if (l == null) return false;
+      return l > length;
+    });
+  }
+
   while (queue.length > 0) {
-    const s = queue.shift();
+    const s = queue.pop();
     if (s.pos.x === endPos.x && s.pos.y === endPos.y) {
       paths.push(s);
       log(s.visited.size - 1);
       continue;
     }
-
-    const oldSize = queue.length;
-    const ret = prune(s.pos, add(s.pos, mul(s.dir, -1)), s.visited.size);
-    queue = ret.queue;
-    if (oldSize !== queue.length) {
-      log('prune', oldSize, queue.length, s.pos, s.visited.size, ret.maxLength);
+    if (s.pos.x === 3 && s.pos.y === 5) {
+      log(s.pos, s.visited.size);
     }
+    const longer = findLongerPaths(s.pos, s.visited.size);
+    if (longer.length > 0) {
+      log(
+        'longer',
+        s.pos,
+        s.visited.size,
+        longer.map(x => x.visited.get(keyOf(s.pos))),
+      );
+      continue;
+    }
+
+    // const oldSize = queue.length;
+    // const ret = prune(s.pos, add(s.pos, mul(s.dir, -1)), s.visited.size);
+    // queue = ret.queue;
+    // if (oldSize !== queue.length) {
+    //   log('prune', oldSize, queue.length, s.pos, s.visited.size, ret.maxLength);
+    // }
     // if (s.visited.size < ret.maxLength) continue;
 
     for (const d of DIRS) {
@@ -229,6 +251,8 @@ export function part2(input: Input) {
         return value === '#' ? '#' : ' ';
       }),
     );
+
+    Array.from(longest.visited.entries()).forEach(([k, v]) => log(v, k));
   }
 
   return longest.visited.size - 1;
