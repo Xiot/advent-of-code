@@ -5,7 +5,7 @@ export function numberPerLine(text: string) {
   return byLine(line => (isNaN(line) ? line : parseFloat(line)))(text);
 }
 
-export function byLine<T>(lineParser: (line: string) => T = line => line as T): (text: string) => T[] {
+export function byLine<T>(lineParser: (line: string, index: number) => T = line => line as T): (text: string) => T[] {
   return text => text.split('\n').map(lineParser);
 }
 
