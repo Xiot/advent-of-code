@@ -38,6 +38,12 @@ export function maxOf(arr: any[], accessor: (item: any) => number = x => x): num
   return accessor(maxBy(arr, accessor));
 }
 
+export function findMaxOf(arr: number[]): number;
+export function findMaxOf<T>(arr: T[], accessor: (item: T) => number): T;
+export function findMaxOf(arr: any[], accessor: (item: any) => number = x => x): any {
+  return maxBy(arr, accessor);
+}
+
 export function minOf(arr: number[]): number;
 export function minOf<T>(arr: T[], accessor: (item: T) => number): number;
 export function minOf(arr: any[], accessor: (item: any) => number = x => x): number {
