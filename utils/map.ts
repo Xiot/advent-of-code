@@ -269,7 +269,7 @@ export function createGridMap(defaultValue: string | ((x: number, y: number) => 
 export function createBucketMap<T, K = string>(keyFn: (item: T) => K) {
   const cache = new Map<K, T[]>();
   return {
-    add(value) {
+    add(value: T) {
       const key = keyFn(value);
       let bucket = cache.get(key);
       if (!bucket) {
