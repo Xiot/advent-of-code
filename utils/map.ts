@@ -1,4 +1,5 @@
 import { maxOf, minOf } from './array';
+import { Point } from './types';
 
 function assertPosition(x: number, y: number) {
   if (typeof x !== 'number' || typeof y !== 'number') {
@@ -180,7 +181,18 @@ export function createGridMap(defaultValue: string | ((x: number, y: number) => 
       assertPosition(x, y);
       return cache.has(keyOf(x, y));
     },
-    get(x: number, y: number) {
+    get(...args: any[]) {
+      let x, y;
+      if (typeof args[0] === 'number') {
+        x = args[0];
+        y = args[1];
+      } else if (typeof args[0] === 'object' && 'x' in args[0]) {
+        x = args[0].x;
+        y = args[0].y;
+      } else {
+        throw new Error('invalid pos');
+      }
+
       assertPosition(x, y);
       markOnGet && bounds.mark(x, y);
 
@@ -313,6 +325,7 @@ export interface GridMap {
 
   empty(x: number, y: number): boolean;
   has(x: number, y: number): boolean;
+  get(pos: Point): string | undefined;
   get(x: number, y: number): string | undefined;
   unset(x: number, y: number): void;
   set(
