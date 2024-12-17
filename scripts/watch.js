@@ -1,8 +1,11 @@
 const path = require('path');
-const { watch: nodeWatch } = require('node:fs');
+const { watch: nodeWatch, appendFileSync, existsSync, unlinkSync } = require('node:fs');
+const stream = require('node:stream');
 
 const { waitForKey } = require('../utils/io');
 const { solutionPath } = require('./utils');
+
+const OUTPUT_FILE = './recent_output.log';
 
 module.exports = {
   async watch(year, day) {
@@ -25,6 +28,10 @@ module.exports = {
 
       let questionResult = null;
       let hasOutput = false;
+
+      if (existsSync(OUTPUT_FILE)) {
+        unlinkSync(OUTPUT_FILE);
+      }
 
       const child = Bun.spawn({
         cmd: ['bun', './scripts/launch.js', year, day, part, inputName],
@@ -72,7 +79,6 @@ module.exports = {
           process.stdout.write(chunk);
         },
       });
-      child.stdout.pipeTo(os);
 
       const errorOut = new WritableStream({
         write(chunk) {
@@ -80,6 +86,15 @@ module.exports = {
         },
       });
       child.stderr.pipeTo(errorOut);
+
+      const fileOut = new WritableStream({
+        write(chunk) {
+          appendFileSync(OUTPUT_FILE, chunk, 'utf-8');
+        },
+      });
+
+      // child.stdout.pipeTo(fileOut);
+      child.stdout.pipeTo(os);
 
       currentChild = child;
       return child;
@@ -137,4 +152,15 @@ module.exports = {
 
 function formatDuration(ms) {
   return `[${ms.toFixed(2).padStart(8)}]`;
+}
+
+function combineStreams(...streams) {
+  return new WritableStream({
+    start() {
+      streams.forEach(s => s.start?.());
+    },
+    write(chunk) {
+      streams.forEach(s => s.write?.(chunk));
+    },
+  });
 }
