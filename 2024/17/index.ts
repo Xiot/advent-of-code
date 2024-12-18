@@ -74,7 +74,7 @@ const OPS: Record<number, OpCode> = {
   2: {
     name: 'bst',
     exec(reg: Registers, arg: number) {
-      const value = combo(reg, arg) % 8;
+      const value = combo(reg, arg) & 0b111; //% 8;
       return {
         action: 'set',
         register: 'B',
