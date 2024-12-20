@@ -26,68 +26,29 @@ function keyOf(p: Point) {
 declare var args: { isSample: boolean };
 
 export function part1(input: Input) {
-  // log('input', input);
-
   const startPos = input.entries().find(e => e[1] === 'S')[0]!;
   const endPos = input.entries().find(e => e[1] === 'E')[0]!;
 
   const ret = solve(input, startPos, endPos);
-  // log(ret);
 
   const minSavings = args.isSample ? 2 : 100;
 
   const cheats = findCheats(ret.path, 2, minSavings).sort((l, r) => l.saved - r.saved);
   const unique = uniqBy(cheats, c => `${c.l.x},${c.l.y}|${c.r.x},${c.r.y}`);
 
-  // log(cheats);
-
-  const clone = input.clone();
-  for (const c of unique.filter(x => x.saved === 4)) {
-    const l = calculateLine(c.l, c.r);
-    const p = l.points().drop(1).toArray();
-
-    for (let i = 0; i < p.length; i++) {
-      clone.set(p[i].x, p[i].y, String(i + 1));
-    }
-  }
-
-  // log(visualizeGrid(clone));
-
   return unique.length;
 }
 
 export function part2(input: Input) {
-  // log('input', input);
-
   const startPos = input.entries().find(e => e[1] === 'S')[0]!;
   const endPos = input.entries().find(e => e[1] === 'E')[0]!;
 
   const ret = solve(input, startPos, endPos);
-  // log(ret);
-
   const minSavings = args.isSample ? 50 : 100;
 
   const cheats = findCheats(ret.path, 20, minSavings).sort((l, r) => r.saved - l.saved);
-  // log(cheats);
-
   const unique = uniqBy(cheats, c => `${c.l.x},${c.l.y}|${c.r.x},${c.r.y}`);
 
-  const clone = input.clone();
-  const buckets = createBucketMap<Cheat>(c => String(c.saved));
-  for (const c of unique) {
-    // log(distance(c.l, c.r), c);
-    buckets.add(c);
-  }
-
-  // log(visualizeGrid(clone));
-
-  const expected = 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3;
-
-  buckets.entries().forEach(([saved, cheats]) => {
-    log(saved, cheats.length);
-  });
-
-  log('expected', expected);
   return unique.length;
 }
 
@@ -138,11 +99,11 @@ function findCheats(input: TimePoint[], cheatLength: number, minSavings: number)
   const cheats: Cheat[] = [];
 
   for (let i = 0; i < input.length - minSavings; i++) {
-    for (let j = i + minSavings + cheatLength; j < input.length; j++) {
+    for (let j = i + minSavings; j < input.length; j++) {
       const d = distance(input[i], input[j]);
-
-      if (d <= cheatLength) {
-        cheats.push({ l: input[i], r: input[j], saved: j - i - d });
+      const saved = j - i - d;
+      if (saved >= minSavings && d <= cheatLength) {
+        cheats.push({ l: input[i], r: input[j], saved });
       }
     }
   }
